@@ -10,7 +10,7 @@
 #  ตัวเลือก (environment):
 #     DOMAIN=example.com   ชื่อโดเมน (ค่าเริ่มต้น _ = รับทุกชื่อ/IP)
 #     HTTP_PORT=80         พอร์ตของเว็บ
-#     ADMIN_USER=admin     ชื่อผู้ใช้สำหรับเข้าหน้าเว็บ
+#     ADMIN_USER=admin     ชื่อผู้ดูแลคนแรก (สร้างเฉพาะตอนยังไม่มีผู้ใช้)
 #  รันซ้ำได้: รหัสผ่านและ token เดิมจะถูกเก็บไว้ ไม่สร้างใหม่
 # =============================================================
 set -euo pipefail
@@ -42,7 +42,7 @@ c_step "ติดตั้งแพ็กเกจ"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
 apt-get install -y -q mariadb-server python3 python3-flask python3-pymysql gunicorn \
-  nginx apache2-utils curl ca-certificates
+  nginx curl ca-certificates
 systemctl enable --now mariadb
 c_ok "ติดตั้งแพ็กเกจแล้ว"
 
@@ -58,8 +58,8 @@ DB_USER=${DB_USER:-nongspore}
 DB_PASS=${DB_PASS:-$(rand 32)}
 DEVICE_TOKEN=${DEVICE_TOKEN:-$(rand 40)}
 RETENTION_DAYS=${RETENTION_DAYS:-180}
+SECRET_KEY=${SECRET_KEY:-$(rand 64)}
 NEW_ADMIN_PASS=""
-if [[ ! -f /etc/nginx/$APP.htpasswd ]]; then NEW_ADMIN_PASS=$(rand 16); fi
 
 id -u "$SVC_USER" >/dev/null 2>&1 || useradd --system --home "$APP_DIR" --shell /usr/sbin/nologin "$SVC_USER"
 
@@ -71,6 +71,7 @@ DB_USER=$DB_USER
 DB_PASS=$DB_PASS
 DEVICE_TOKEN=$DEVICE_TOKEN
 RETENTION_DAYS=$RETENTION_DAYS
+SECRET_KEY=$SECRET_KEY
 EOF
 chown root:"$SVC_USER" "$ENV_FILE"; chmod 640 "$ENV_FILE"
 umask 022
@@ -107,6 +108,15 @@ c_ok "คัดลอกไฟล์แล้ว (รูป ${#imgs[@]} ไฟ�
 
 c_step "สร้างตารางในฐานข้อมูล"
 ( set -a; . "$ENV_FILE"; set +a; cd "$APP_DIR" && python3 app.py --init-db )
+install -m 755 "$SRC/reset-admin-password.sh" /usr/local/sbin/nong-spore-reset-password
+USERS=$( set -a; . "$ENV_FILE"; set +a; cd "$APP_DIR" && python3 app.py --count-users )
+if [[ "$USERS" == "0" ]]; then
+  NEW_ADMIN_PASS=$(rand 16)
+  ( set -a; . "$ENV_FILE"; set +a; cd "$APP_DIR" && NSA_USER="$ADMIN_USER" NSA_PASS="$NEW_ADMIN_PASS" python3 app.py --set-password >/dev/null )
+  c_ok "สร้างผู้ดูแลระบบ $ADMIN_USER แล้ว"
+else
+  c_ok "มีผู้ใช้อยู่แล้ว $USERS คน (ไม่สร้างใหม่)"
+fi
 
 # ---------- 5. systemd ----------
 c_step "ตั้งค่า systemd service"
@@ -139,10 +149,7 @@ c_ok "service $APP ทำงานแล้ว"
 
 # ---------- 6. nginx ----------
 c_step "ตั้งค่า Nginx"
-if [[ -n "$NEW_ADMIN_PASS" ]]; then
-  htpasswd -bcB /etc/nginx/$APP.htpasswd "$ADMIN_USER" "$NEW_ADMIN_PASS" >/dev/null
-fi
-chown root:www-data /etc/nginx/$APP.htpasswd; chmod 640 /etc/nginx/$APP.htpasswd
+rm -f /etc/nginx/$APP.htpasswd   # เวอร์ชันเก่าใช้ basic auth ตอนนี้แอปจัดการการเข้าสู่ระบบเอง
 
 cat >/etc/nginx/sites-available/$APP <<EOF
 server {
@@ -156,19 +163,15 @@ server {
 
     # ESP32 ส่งข้อมูล (ยืนยันตัวตนด้วย X-Device-Token)
     location = /api/ingest {
-        auth_basic off;
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
     }
     location = /healthz {
-        auth_basic off;
         proxy_pass http://127.0.0.1:8000;
     }
-    # หน้าเว็บและ API อื่นต้องใส่รหัสผ่าน
+    # หน้าเว็บและ API อื่น (แอปบังคับให้เข้าสู่ระบบเอง)
     location / {
-        auth_basic "Nong Spore AI";
-        auth_basic_user_file /etc/nginx/$APP.htpasswd;
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -208,13 +211,15 @@ URL="http://${IP}$([[ "$HTTP_PORT" == "80" ]] || echo ":$HTTP_PORT")"
   echo "Nong Spore AI - ติดตั้งเมื่อ $(date '+%F %T')"
   echo "URL หน้าเว็บ     : $URL"
   echo "พอร์ตเว็บ       : $HTTP_PORT/tcp"
-  echo "ผู้ใช้หน้าเว็บ    : $ADMIN_USER"
-  [[ -n "$NEW_ADMIN_PASS" ]] && echo "รหัสผ่านหน้าเว็บ : $NEW_ADMIN_PASS"
+  if [[ -n "$NEW_ADMIN_PASS" ]]; then
+    echo "ผู้ใช้หน้าเว็บ    : $ADMIN_USER"
+    echo "รหัสผ่านหน้าเว็บ : $NEW_ADMIN_PASS"
+  fi
   echo "SERVER_URL (ESP32)  : $URL"
   echo "DEVICE_TOKEN (ESP32): $DEVICE_TOKEN"
 } > "$CRED_FILE.new"
 if [[ -z "$NEW_ADMIN_PASS" && -f "$CRED_FILE" ]]; then
-  grep 'รหัสผ่านหน้าเว็บ' "$CRED_FILE" >> "$CRED_FILE.new" || true
+  grep -E 'ผู้ใช้หน้าเว็บ|รหัสผ่านหน้าเว็บ' "$CRED_FILE" >> "$CRED_FILE.new" || true
 fi
 mv "$CRED_FILE.new" "$CRED_FILE"; chmod 600 "$CRED_FILE"
 
@@ -224,7 +229,8 @@ cat "$CRED_FILE"
 echo "----------------------------------------------------------------"
 echo "ข้อมูลนี้บันทึกไว้ที่ $CRED_FILE (อ่านได้เฉพาะ root)"
 echo "นำ SERVER_URL และ DEVICE_TOKEN ไปใส่ใน mushroom_house_wifi.ino แล้วอัปโหลดลงบอร์ด"
-echo "เปลี่ยนรหัสผ่านเว็บ: htpasswd -B /etc/nginx/$APP.htpasswd $ADMIN_USER"
+echo "เพิ่ม/ลบผู้ใช้และเปลี่ยนรหัสผ่าน: ทำได้ในหน้าเว็บ ส่วน 'ผู้ใช้งาน'"
+echo "ลืมรหัสผ่าน admin: nong-spore-reset-password [ชื่อผู้ใช้]"
 echo "ดู log: journalctl -u $APP -f"
 echo "พอร์ตที่ใช้:"
 echo "  - $HTTP_PORT/tcp  หน้าเว็บและ API (Nginx)  <- เปิด firewall พอร์ตนี้"

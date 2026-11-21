@@ -6,11 +6,19 @@ import os
 import time
 from datetime import datetime, timedelta
 
+import re
+
 import pymysql
-from flask import Flask, Response, abort, g, jsonify, request, send_from_directory
+from flask import Flask, Response, abort, g, jsonify, redirect, request, send_from_directory, session
+from werkzeug.security import check_password_hash, generate_password_hash
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, static_folder=None)
+app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(32)
+app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax",
+                  PERMANENT_SESSION_LIFETIME=timedelta(days=7))
+USER_RE = re.compile(r"^[A-Za-z0-9_.-]{3,32}$")
+MIN_PASS = 8
 
 DB = dict(
     host=os.environ.get("DB_HOST", "localhost"),
@@ -57,6 +65,13 @@ SCHEMA = [
         msg VARCHAR(255) NOT NULL,
         INDEX idx_ts (ts)
     ) ENGINE=InnoDB""",
+    """CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(32) NOT NULL UNIQUE,
+        password_hash VARCHAR(255) NOT NULL,
+        created_at DATETIME NOT NULL,
+        last_login DATETIME NULL
+    ) ENGINE=InnoDB""",
     "INSERT IGNORE INTO device_state (id) VALUES (1)",
 ]
 
@@ -98,6 +113,140 @@ def settings_json(s):
             "tempOn": num(s["temp_on"]), "tempOff": num(s["temp_off"])}
 
 
+# ---------------- Auth ----------------
+PUBLIC = {"/api/ingest", "/healthz", "/login", "/api/login"}
+_fails = {}  # ip -> (count, first_ts) จำกัดการเดารหัสผ่าน
+
+
+def client_ip():
+    return request.headers.get("CF-Connecting-IP") or request.headers.get("X-Real-IP") or request.remote_addr
+
+
+def current_user():
+    uid = session.get("uid")
+    if not uid:
+        return None
+    u = q("SELECT id, username, password_hash FROM users WHERE id=%s", (uid,), one=True)
+    if not u or session.get("pv") != u["password_hash"][-16:]:
+        session.clear()
+        return None
+    return u
+
+
+@app.before_request
+def require_login():
+    if request.path in PUBLIC:
+        return None
+    g.user = current_user()
+    if g.user is None:
+        if request.path.startswith("/api/"):
+            return jsonify({"error": "กรุณาเข้าสู่ระบบ"}), 401
+        return redirect("/login")
+    # ป้องกัน CSRF: คำสั่งที่เปลี่ยนข้อมูลต้องส่งเป็น JSON
+    if request.method in ("POST", "PUT", "DELETE") and not request.is_json:
+        return jsonify({"error": "ต้องส่งข้อมูลแบบ JSON"}), 415
+    return None
+
+
+@app.get("/login")
+def login_page():
+    return send_from_directory(os.path.join(BASE, "static"), "login.html")
+
+
+@app.post("/api/login")
+def login():
+    ip = client_ip()
+    cnt, first = _fails.get(ip, (0, time.time()))
+    if time.time() - first > 900:
+        cnt, first = 0, time.time()
+    if cnt >= 10:
+        return jsonify({"error": "ลองผิดหลายครั้งเกินไป กรุณารอ 15 นาที"}), 429
+    d = request.get_json(force=True, silent=True) or {}
+    u = q("SELECT * FROM users WHERE username=%s", (str(d.get("username", "")),), one=True)
+    if not u or not check_password_hash(u["password_hash"], str(d.get("password", ""))):
+        _fails[ip] = (cnt + 1, first)
+        return jsonify({"error": "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"}), 401
+    _fails.pop(ip, None)
+    session.clear()
+    session.permanent = True
+    session["uid"], session["pv"] = u["id"], u["password_hash"][-16:]
+    q("UPDATE users SET last_login=NOW() WHERE id=%s", (u["id"],))
+    event("info", f"ผู้ใช้ {u['username']} เข้าสู่ระบบ")
+    return jsonify({"ok": True})
+
+
+@app.post("/api/logout")
+def logout():
+    session.clear()
+    return jsonify({"ok": True})
+
+
+@app.get("/api/me")
+def me():
+    return jsonify({"id": g.user["id"], "username": g.user["username"]})
+
+
+def check_new(username, password):
+    if username is not None and not USER_RE.match(username):
+        return "ชื่อผู้ใช้ต้องมี 3-32 ตัว ใช้ได้เฉพาะ A-Z a-z 0-9 _ . -"
+    if len(password) < MIN_PASS:
+        return f"รหัสผ่านต้องยาวอย่างน้อย {MIN_PASS} ตัวอักษร"
+    return None
+
+
+@app.get("/api/users")
+def users():
+    rows = q("SELECT id, username, created_at, last_login FROM users ORDER BY username")
+    return jsonify([{"id": r["id"], "username": r["username"], "me": r["id"] == g.user["id"],
+                     "createdAt": r["created_at"].isoformat(),
+                     "lastLogin": r["last_login"].isoformat() if r["last_login"] else None} for r in rows])
+
+
+@app.post("/api/users")
+def add_user():
+    d = request.get_json(force=True, silent=True) or {}
+    name, pw = str(d.get("username", "")).strip(), str(d.get("password", ""))
+    err = check_new(name, pw)
+    if err:
+        return jsonify({"error": err}), 400
+    if q("SELECT id FROM users WHERE username=%s", (name,), one=True):
+        return jsonify({"error": "มีชื่อผู้ใช้นี้แล้ว"}), 409
+    q("INSERT INTO users (username, password_hash, created_at) VALUES (%s,%s,NOW())",
+      (name, generate_password_hash(pw)))
+    event("info", f"{g.user['username']} เพิ่มผู้ใช้ {name}")
+    return jsonify({"ok": True})
+
+
+@app.put("/api/users/<int:uid>/password")
+def change_password(uid):
+    d = request.get_json(force=True, silent=True) or {}
+    pw = str(d.get("password", ""))
+    err = check_new(None, pw)
+    if err:
+        return jsonify({"error": err}), 400
+    u = q("SELECT username FROM users WHERE id=%s", (uid,), one=True)
+    if not u:
+        return jsonify({"error": "ไม่พบผู้ใช้"}), 404
+    h = generate_password_hash(pw)
+    q("UPDATE users SET password_hash=%s WHERE id=%s", (h, uid))
+    if uid == g.user["id"]:
+        session["pv"] = h[-16:]
+    event("info", f"{g.user['username']} เปลี่ยนรหัสผ่านของ {u['username']}")
+    return jsonify({"ok": True})
+
+
+@app.delete("/api/users/<int:uid>")
+def delete_user(uid):
+    if uid == g.user["id"]:
+        return jsonify({"error": "ลบบัญชีของตัวเองไม่ได้"}), 400
+    u = q("SELECT username FROM users WHERE id=%s", (uid,), one=True)
+    if not u:
+        return jsonify({"error": "ไม่พบผู้ใช้"}), 404
+    q("DELETE FROM users WHERE id=%s", (uid,))
+    event("info", f"{g.user['username']} ลบผู้ใช้ {u['username']}")
+    return jsonify({"ok": True})
+
+
 # ---------------- ESP32 ----------------
 @app.post("/api/ingest")
 def ingest():
@@ -114,7 +263,7 @@ def ingest():
     q("INSERT INTO readings (ts, temp, hum, fan, auto_mode, sensor_ok, rssi) VALUES (NOW(),%s,%s,%s,%s,%s,%s)",
       (temp, hum, fan, bool(d.get("auto", True)), ok, d.get("rssi")))
     q("UPDATE device_state SET last_seen=NOW(), ip=%s, uptime=%s, fan_on_sec=%s WHERE id=1",
-      (request.headers.get("X-Real-IP", request.remote_addr), d.get("uptime"), d.get("fanOnSec")))
+      (client_ip(), d.get("uptime"), d.get("fanOnSec")))
 
     if last is None or (datetime.now() - last["ts"]).total_seconds() > 120:
         event("info", "บอร์ด ESP32 ออนไลน์")
@@ -256,5 +405,24 @@ if __name__ == "__main__":
     if "--init-db" in sys.argv:
         init_db()
         print("database ready")
+    elif "--count-users" in sys.argv:
+        c = pymysql.connect(**DB)
+        with c.cursor() as cur:
+            cur.execute("SELECT COUNT(*) n FROM users")
+            print(cur.fetchone()["n"])
+    elif "--set-password" in sys.argv:
+        # NSA_USER=admin NSA_PASS=xxx python3 app.py --set-password  (สร้างผู้ใช้ให้ถ้ายังไม่มี)
+        name, pw = os.environ.get("NSA_USER", "admin"), os.environ.get("NSA_PASS", "")
+        err = check_new(name, pw)
+        if err:
+            sys.exit(err)
+        c = pymysql.connect(**DB)
+        with c.cursor() as cur:
+            cur.execute("""INSERT INTO users (username, password_hash, created_at) VALUES (%s,%s,NOW())
+                           ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash)""",
+                        (name, generate_password_hash(pw)))
+            cur.execute("INSERT INTO events (ts, level, msg) VALUES (NOW(),'info',%s)",
+                        (f"รีเซ็ตรหัสผ่านของ {name} จากเซิร์ฟเวอร์",))
+        print(f"ตั้งรหัสผ่านของ {name} แล้ว")
     else:
         app.run(host="127.0.0.1", port=8000, debug=False)
