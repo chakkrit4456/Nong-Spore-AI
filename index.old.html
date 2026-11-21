@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nong Spore AI · แดชบอร์ดโรงเรือนเพาะเห็ด</title>
+<style>
+:root{
+  --bg:#eef4f1;--card:#fff;--ink:#1f2d2a;--muted:#6b7c77;--line:#dfe8e4;
+  --green:#2f9e6b;--green-soft:#e3f4ec;--red:#d9534f;--red-soft:#fbe9e8;
+  --amber:#d99a1f;--amber-soft:#fcf3e0;--blue:#2b7fd1;--blue-soft:#e4effb;
+  --temp:#e8664a;--hum:#2b7fd1;--co2:#7a5cc7;--radius:16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--ink)}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:1280px;margin:0 auto;padding:18px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.logo{width:52px;height:52px}
+.brand h1{margin:0;font-size:24px}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.hright{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.clock{font-size:14px;color:var(--muted);text-align:right}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.ok{background:var(--green-soft);color:var(--green)}
+.warn{background:var(--amber-soft);color:var(--amber)}
+.bad{background:var(--red-soft);color:var(--red)}
+.info{background:var(--blue-soft);color:var(--blue)}
+nav{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+nav button{border:0;background:transparent;padding:9px 16px;border-radius:10px;font-size:15px;color:var(--muted)}
+nav button.active{background:var(--card);color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:2fr 1fr}
+.g2e{grid-template-columns:1fr 1fr}
+@media(max-width:900px){.g3,.g2,.g2e{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card h3{margin:0 0 12px;font-size:16px;display:flex;align-items:center;gap:8px}
+.card h3 .sub{margin-left:auto;font-weight:400;font-size:13px;color:var(--muted)}
+.metric{display:flex;gap:14px;align-items:center}
+.micon{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:26px;flex:none}
+.mlabel{color:var(--muted);font-size:14px}
+.mval{font-size:34px;font-weight:700;line-height:1.1}
+.mval small{font-size:16px;font-weight:500;color:var(--muted)}
+.mfoot{display:flex;justify-content:space-between;margin-top:12px;font-size:13px;color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--line);margin-top:10px;position:relative;overflow:hidden}
+.bar .range{position:absolute;top:0;bottom:0;background:var(--green-soft)}
+.bar .pos{position:absolute;top:-2px;width:4px;height:10px;border-radius:2px;background:var(--ink)}
+.ctrl{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.ctrl:last-child{border-bottom:0}
+.ctrl .ic{font-size:22px;width:36px;text-align:center}
+.ctrl .t{flex:1}
+.ctrl .t b{display:block;font-size:15px}
+.ctrl .t span{font-size:13px;color:var(--muted)}
+.sw{position:relative;width:50px;height:28px;flex:none}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#cdd8d4;border-radius:999px;transition:.2s}
+.sw span:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sw input:checked+span{background:var(--green)}
+.sw input:checked+span:before{transform:translateX(22px)}
+.sw input:disabled+span{opacity:.5;cursor:not-allowed}
+.automode{display:flex;align-items:center;gap:10px;background:var(--blue-soft);border-radius:12px;padding:10px 12px;margin-bottom:6px}
+.automode b{flex:1;font-size:14px}
+.tabs{display:flex;gap:6px}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 10px;font-size:13px;color:var(--muted)}
+.tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+canvas{width:100%;display:block}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.lcd{background:#1c4a1c;border-radius:10px;padding:12px 14px;font-family:"Consolas","Courier New",monospace;color:#b7f5a1;font-size:17px;letter-spacing:1px;line-height:1.5;white-space:pre;box-shadow:inset 0 0 0 4px #123312}
+.log{max-height:300px;overflow:auto;font-size:13px}
+.log div{padding:7px 0;border-bottom:1px dashed var(--line);display:flex;gap:10px}
+.log time{color:var(--muted);flex:none;width:62px}
+.alert{display:flex;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:8px;font-size:14px}
+.fc{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.fc div{background:var(--bg);border-radius:12px;padding:12px;text-align:center}
+.fc b{display:block;font-size:22px}
+.fc span{font-size:12px;color:var(--muted)}
+label.f{display:block;font-size:14px;margin-bottom:12px}
+label.f span{display:block;color:var(--muted);margin-bottom:4px}
+input[type=text],input[type=number],select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:15px;background:#fff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-size:15px;font-weight:600}
+.btn.p{background:var(--green);color:#fff}
+.btn.s{background:var(--bg);color:var(--ink)}
+.hidden{display:none!important}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600}
+.stat{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:700px){.stat{grid-template-columns:repeat(2,1fr)}}
+.stat div{background:var(--bg);border-radius:12px;padding:12px}
+.stat span{font-size:12px;color:var(--muted)}
+.stat b{display:block;font-size:20px}
+.note{font-size:13px;color:var(--muted);line-height:1.6}
+code{background:var(--bg);padding:1px 6px;border-radius:5px;font-size:13px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <svg class="logo" viewBox="0 0 64 64"><ellipse cx="32" cy="26" rx="26" ry="18" fill="#c8794b"/><circle cx="20" cy="20" r="4" fill="#f3d9c4"/><circle cx="38" cy="15" r="3" fill="#f3d9c4"/><circle cx="44" cy="26" r="3.5" fill="#f3d9c4"/><rect x="22" y="34" width="20" height="22" rx="8" fill="#f6e7d4"/><circle cx="28" cy="44" r="2" fill="#1f2d2a"/><circle cx="36" cy="44" r="2" fill="#1f2d2a"/><path d="M29 49q3 3 6 0" stroke="#1f2d2a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+  <div class="brand"><h1>Nong Spore AI</h1><p>ระบบโรงเรือนเพาะเห็ดอัจฉริยะ · <span id="cropName">เห็ดนางฟ้า</span></p></div>
+  <div class="hright">
+    <span id="connPill" class="pill info"><span class="dot"></span><span id="connText">โหมดจำลอง</span></span>
+    <span id="sysPill" class="pill ok"><span class="dot"></span><span id="sysText">ระบบทำงานปกติ</span></span>
+    <div class="clock"><div id="clockDate"></div><div id="clockTime" style="font-weight:700;color:var(--ink)"></div></div>
+  </div>
+</header>
+
+<nav>
+  <button data-page="home" class="active">🏠 หน้าแรก</button>
+  <button data-page="history">📈 ข้อมูลย้อนหลัง</button>
+  <button data-page="ai">🧠 พยากรณ์ AI</button>
+  <button data-page="settings">⚙️ ตั้งค่า</button>
+</nav>
+
+<!-- ============ HOME ============ -->
+<section id="page-home">
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card" id="cTemp"></div>
+    <div class="card" id="cHum"></div>
+    <div class="card" id="cCo2"></div>
+  </div>
+  <div class="grid g2" style="margin-bottom:16px">
+    <div class="card">
+      <h3>กราฟข้อมูลย้อนหลัง
+        <span class="sub tabs" id="rangeTabs"><button data-r="1">1 ชม.</button><button data-r="6">6 ชม.</button><button data-r="24" class="active">24 ชม.</button></span>
+      </h3>
+      <canvas id="chart" height="260"></canvas>
+      <div class="legend"><span><i style="background:var(--temp)"></i>อุณหภูมิ (°C)</span><span><i style="background:var(--hum)"></i>ความชื้น (%)</span><span><i style="background:var(--co2)"></i>CO₂ (÷10 ppm)</span></div>
+    </div>
+    <div class="card">
+      <h3>การควบคุมอุปกรณ์</h3>
+      <div class="automode"><span>🤖</span><b>โหมดอัตโนมัติ<br><span style="font-weight:400;font-size:12px;color:var(--muted)">ระบบสั่งงานตามค่าที่ตั้งไว้</span></b><label class="sw"><input type="checkbox" id="autoSw"><span></span></label></div>
+      <div class="ctrl"><div class="ic">🌀</div><div class="t"><b>พัดลมระบายอากาศ</b><span id="fanNote">รีเลย์ช่อง 1</span></div><label class="sw"><input type="checkbox" id="sw-fan"><span></span></label></div>
+      <div class="ctrl"><div class="ic">💧</div><div class="t"><b>ระบบพ่นหมอก</b><span id="mistNote">รีเลย์ช่อง 2</span></div><label class="sw"><input type="checkbox" id="sw-mist"><span></span></label></div>
+      <div class="ctrl"><div class="ic">💡</div><div class="t"><b>ไฟในโรงเรือน</b><span id="lightNote">รีเลย์ช่อง 3</span></div><label class="sw"><input type="checkbox" id="sw-light"><span></span></label></div>
+    </div>
+  </div>
+  <div class="grid g3">
+    <div class="card"><h3>⚠️ การแจ้งเตือน</h3><div id="alerts"></div></div>
+    <div class="card"><h3>🖥️ จอ LCD ที่กล่องควบคุม</h3><div class="lcd" id="lcd"></div><p class="note" style="margin-top:10px">แสดงผลเหมือนจอ 16x2 ที่ต่อกับ ESP32</p></div>
+    <div class="card"><h3>📝 บันทึกเหตุการณ์ <span class="sub"><a href="#" id="clearLog" style="color:var(--muted)">ล้าง</a></span></h3><div class="log" id="log"></div></div>
+  </div>
+</section>
+
+<!-- ============ HISTORY ============ -->
+<section id="page-history" class="hidden">
+  <div class="card" style="margin-bottom:16px">
+    <h3>สรุปข้อมูลย้อนหลัง
+      <span class="sub tabs" id="hRangeTabs"><button data-r="1">1 ชม.</button><button data-r="6">6 ชม.</button><button data-r="24" class="active">24 ชม.</button></span>
+    </h3>
+    <div class="stat" id="hStats"></div>
+    <canvas id="chart2" height="300"></canvas>
+    <div class="legend"><span><i style="background:var(--temp)"></i>อุณหภูมิ</span><span><i style="background:var(--hum)"></i>ความชื้น</span><span><i style="background:var(--co2)"></i>CO₂ ÷10</span></div>
+  </div>
+  <div class="card">
+    <h3>ตารางข้อมูล (ทุก 30 นาที) <span class="sub"><button class="btn s" id="csvBtn" style="padding:6px 12px;font-size:13px">⬇ ดาวน์โหลด CSV</button></span></h3>
+    <div style="max-height:380px;overflow:auto"><table><thead><tr><th>เวลา</th><th>อุณหภูมิ (°C)</th><th>ความชื้น (%)</th><th>CO₂ (ppm)</th><th>สถานะ</th></tr></thead><tbody id="hTable"></tbody></table></div>
+  </div>
+</section>
+
+<!-- ============ AI ============ -->
+<section id="page-ai" class="hidden">
+  <div class="grid g2e">
+    <div class="card">
+      <h3>🔮 พยากรณ์ 1 ชั่วโมงข้างหน้า</h3>
+      <div class="fc" id="fc"></div>
+      <canvas id="chart3" height="220"></canvas>
+      <p class="note">คาดการณ์จากแนวโน้มของข้อมูล 30 นาทีล่าสุด (linear regression) เส้นประคือค่าที่พยากรณ์</p>
+    </div>
+    <div class="card">
+      <h3>💡 คำแนะนำจากระบบ</h3>
+      <div id="advice"></div>
+      <h3 style="margin-top:18px">🍄 คะแนนสภาพแวดล้อม</h3>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div id="score" style="font-size:52px;font-weight:800"></div>
+        <div class="note" id="scoreNote"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="page-settings" class="hidden">
+  <div class="grid g2e">
+    <div class="card">
+      <h3>🔌 การเชื่อมต่อ ESP32</h3>
+      <label class="f"><span>โหมดข้อมูล</span><select id="sMode"><option value="demo">จำลองข้อมูล (ทดสอบหน้าเว็บ)</option><option value="device">เชื่อมต่อบอร์ด ESP32 จริง</option></select></label>
+      <label class="f"><span>ที่อยู่ IP ของ ESP32</span><input type="text" id="sIp" placeholder="เช่น 192.168.1.50"></label>
+      <label class="f"><span>อ่านค่าทุก (วินาที)</span><input type="number" id="sPoll" min="2" max="60"></label>
+      <button class="btn s" id="testBtn">ทดสอบการเชื่อมต่อ</button> <span id="testRes" class="note"></span>
+      <p class="note" style="margin-top:14px">ESP32 ต้องรันเฟิร์มแวร์ <code>nong_spore_esp32.ino</code> ที่อยู่ในโฟลเดอร์เดียวกัน คอมพิวเตอร์ที่เปิดหน้านี้ต้องอยู่ในเครือข่ายเดียวกับบอร์ด</p>
+    </div>
+    <div class="card">
+      <h3>🍄 ชนิดเห็ดและค่าเป้าหมาย</h3>
+      <label class="f"><span>ชนิดเห็ด (เลือกแล้วระบบเติมค่าที่แนะนำให้)</span><select id="sCrop"></select></label>
+      <div class="row2">
+        <label class="f"><span>อุณหภูมิต่ำสุด (°C)</span><input type="number" step="0.5" id="sTmin"></label>
+        <label class="f"><span>อุณหภูมิสูงสุด (°C)</span><input type="number" step="0.5" id="sTmax"></label>
+        <label class="f"><span>ความชื้นต่ำสุด (%)</span><input type="number" id="sHmin"></label>
+        <label class="f"><span>ความชื้นสูงสุด (%)</span><input type="number" id="sHmax"></label>
+        <label class="f"><span>CO₂ สูงสุด (ppm)</span><input type="number" id="sCmax"></label>
+        <label class="f"><span>พ่นหมอกครั้งละไม่เกิน (วินาที)</span><input type="number" id="sMistMax"></label>
+      </div>
+      <div class="row2">
+        <label class="f"><span>เปิดไฟเวลา</span><input type="text" id="sLightOn" placeholder="06:00"></label>
+        <label class="f"><span>ปิดไฟเวลา</span><input type="text" id="sLightOff" placeholder="18:00"></label>
+      </div>
+      <button class="btn p" id="saveBtn">บันทึกการตั้งค่า</button>
+    </div>
+  </div>
+</section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= CONFIG ================= */
+const CROPS = {
+  nangfa:{name:"เห็ดนางฟ้า",tmin:25,tmax:30,hmin:80,hmax:90,cmax:1000},
+  nangrom:{name:"เห็ดนางรม",tmin:24,tmax:30,hmin:80,hmax:90,cmax:1000},
+  hunu:{name:"เห็ดหูหนู",tmin:28,tmax:32,hmin:85,hmax:95,cmax:1200},
+  yanagi:{name:"เห็ดยานางิ",tmin:22,tmax:28,hmin:85,hmax:95,cmax:1000},
+  khonkao:{name:"เห็ดขอนขาว",tmin:28,tmax:34,hmin:75,hmax:85,cmax:1200},
+  fang:{name:"เห็ดฟาง",tmin:30,tmax:35,hmin:80,hmax:85,cmax:1500},
+  custom:{name:"กำหนดเอง"}
+};
+const DEFAULTS = {mode:"demo",ip:"",poll:5,crop:"nangfa",tmin:25,tmax:30,hmin:80,hmax:90,cmax:1000,mistMax:30,lightOn:"06:00",lightOff:"18:00"};
+function load(){try{return Object.assign({},DEFAULTS,JSON.parse(localStorage.getItem("nsa_cfg")||"{}"))}catch(e){return {...DEFAULTS}}}
+function persist(){try{localStorage.setItem("nsa_cfg",JSON.stringify(cfg))}catch(e){}}
+let cfg = load();
+
+/* ================= STATE ================= */
+const S = {temp:27.2,hum:84,co2:680,fan:false,mist:false,light:false,auto:true,online:false,lastOk:0,mistSince:0};
+let history = []; // {t,temp,hum,co2}
+let logs = [];
+const $ = id=>document.getElementById(id);
+const fmtT = d=>d.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"});
+
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2200)}
+function addLog(msg){logs.unshift({t:new Date(),msg});logs=logs.slice(0,80);renderLog()}
+
+/* ================= DEMO SIMULATION ================= */
+function seedHistory(){
+  history=[];const now=Date.now();let t=27,h=85,c=650;
+  for(let i=24*60;i>0;i-=2){
+    const ts=now-i*60000,hr=new Date(ts).getHours()+new Date(ts).getMinutes()/60;
+    const base=26.5+2.5*Math.sin((hr-9)/24*2*Math.PI);
+    t+= (base-t)*0.15+(Math.random()-.5)*0.2;
+    h+= (86-h)*0.1+(Math.random()-.5)*1.4 - (t-27)*0.15;
+    c+= (700-c)*0.1+(Math.random()-.5)*40;
+    history.push({t:ts,temp:+t.toFixed(1),hum:+Math.min(99,h).toFixed(1),co2:Math.round(c)});
+  }
+  const l=history[history.length-1];S.temp=l.temp;S.hum=l.hum;S.co2=l.co2;
+}
+function simStep(dt){
+  const hr=new Date().getHours()+new Date().getMinutes()/60;
+  const amb=26.5+2.5*Math.sin((hr-9)/24*2*Math.PI);
+  S.temp += (amb-S.temp)*0.02*dt + (S.fan?-0.03:0)*dt + (S.light?0.005:0)*dt + (Math.random()-.5)*0.08;
+  S.hum  += (S.mist?1.6:-0.18)*dt + (S.fan?-0.25:0)*dt + (Math.random()-.5)*0.3;
+  S.co2  += (S.fan?-25:6)*dt + (Math.random()-.5)*10;
+  S.temp=+S.temp.toFixed(2);S.hum=Math.max(40,Math.min(99,S.hum));S.co2=Math.max(400,Math.min(3000,S.co2));
+}
+
+/* ================= AUTO CONTROL (demo only; device runs its own) ================= */
+function autoControl(){
+  if(!S.auto) return;
+  const now=Date.now();
+  // mist
+  if(!S.mist && S.hum<cfg.hmin){setDev("mist",true,"อัตโนมัติ: ความชื้นต่ำกว่า "+cfg.hmin+"%");S.mistSince=now}
+  else if(S.mist && (S.hum>=cfg.hmax-2 || now-S.mistSince>cfg.mistMax*1000)){setDev("mist",false,"อัตโนมัติ: หยุดพ่นหมอก")}
+  // fan
+  const needFan = S.co2>cfg.cmax || S.temp>cfg.tmax || S.hum>cfg.hmax+3;
+  const fanOk = S.co2<cfg.cmax-150 && S.temp<cfg.tmax-0.5 && S.hum<=cfg.hmax;
+  if(!S.fan && needFan) setDev("fan",true,"อัตโนมัติ: "+(S.co2>cfg.cmax?"CO₂ สูง":S.temp>cfg.tmax?"อุณหภูมิสูง":"ความชื้นเกิน")+" เปิดพัดลม");
+  else if(S.fan && fanOk) setDev("fan",false,"อัตโนมัติ: สภาพอากาศปกติ ปิดพัดลม");
+  // light schedule
+  const hm=new Date().toTimeString().slice(0,5);
+  const on = cfg.lightOn<cfg.lightOff ? (hm>=cfg.lightOn&&hm<cfg.lightOff) : (hm>=cfg.lightOn||hm<cfg.lightOff);
+  if(on!==S.light) setDev("light",on,"อัตโนมัติ: ตารางเวลาไฟ "+(on?"เปิด":"ปิด"));
+}
+
+/* ================= DEVICE API ================= */
+const base=()=>"http://"+cfg.ip.trim();
+async function api(path,opt={}){
+  const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),4000);
+  try{const r=await fetch(base()+path,{...opt,signal:ctl.signal,headers:{"Content-Type":"application/json"}});if(!r.ok)throw new Error(r.status);return await r.json()}
+  finally{clearTimeout(to)}
+}
+async function pollDevice(){
+  try{
+    const d=await api("/api/status");
+    Object.assign(S,{temp:d.temp,hum:d.hum,co2:d.co2??null,fan:!!d.fan,mist:!!d.mist,light:!!d.light,auto:!!d.auto});
+    if(!S.online) addLog("เชื่อมต่อ ESP32 สำเร็จ ("+cfg.ip+")");
+    S.online=true;S.lastOk=Date.now();
+    pushHistory();
+  }catch(e){
+    if(S.online) addLog("ขาดการเชื่อมต่อกับ ESP32");
+    S.online=false;
+  }
+  renderAll();
+}
+async function loadDeviceHistory(){
+  try{const d=await api("/api/history");if(Array.isArray(d)&&d.length){const now=Date.now();history=d.map(x=>({t:now-x.ago*1000,temp:x.temp,hum:x.hum,co2:x.co2??null}))}}catch(e){}
+}
+async function pushConfig(){
+  if(cfg.mode!=="device") return;
+  try{await api("/api/config",{method:"POST",body:JSON.stringify({tmin:cfg.tmin,tmax:cfg.tmax,hmin:cfg.hmin,hmax:cfg.hmax,cmax:cfg.cmax,mistMax:cfg.mistMax,lightOn:cfg.lightOn,lightOff:cfg.lightOff})});toast("ส่งค่าตั้งไปที่ ESP32 แล้ว")}
+  catch(e){toast("ส่งค่าตั้งไป ESP32 ไม่สำเร็จ")}
+}
+
+const NAMES={fan:"พัดลม",mist:"พ่นหมอก",light:"ไฟ"};
+async function setDev(name,state,reason){
+  if(cfg.mode==="device"){
+    try{await api("/api/relay",{method:"POST",body:JSON.stringify({name,state})});S[name]=state}
+    catch(e){toast("สั่งงานไม่สำเร็จ ตรวจสอบการเชื่อมต่อ");renderAll();return}
+  } else S[name]=state;
+  if(name==="mist"&&state) S.mistSince=Date.now();
+  addLog((reason||"สั่งด้วยมือ")+" → "+NAMES[name]+" "+(state?"เปิด":"ปิด"));
+  renderAll();
+}
+async function setAuto(v){
+  if(cfg.mode==="device"){try{await api("/api/auto",{method:"POST",body:JSON.stringify({auto:v})})}catch(e){toast("สั่งงานไม่สำเร็จ");renderAll();return}}
+  S.auto=v;addLog("โหมดอัตโนมัติ "+(v?"เปิด":"ปิด"));renderAll();
+}
+
+/* ================= HISTORY ================= */
+function pushHistory(){
+  const now=Date.now();const last=history[history.length-1];
+  if(!last||now-last.t>=60000){history.push({t:now,temp:+(+S.temp).toFixed(1),hum:+(+S.hum).toFixed(1),co2:S.co2==null?null:Math.round(S.co2)});}
+  const cut=now-24*3600e3;while(history.length&&history[0].t<cut)history.shift();
+}
+
+/* ================= STATUS ================= */
+function level(v,min,max,soft){if(v==null)return"na";if(v<min-soft||v>max+soft)return"bad";if(v<min||v>max)return"warn";return"ok"}
+function evalAll(){
+  return{
+    temp:level(S.temp,cfg.tmin,cfg.tmax,2),
+    hum:level(S.hum,cfg.hmin,cfg.hmax,5),
+    co2:S.co2==null?"na":(S.co2>cfg.cmax+400?"bad":S.co2>cfg.cmax?"warn":"ok")
+  };
+}
+const LV={ok:["ok","ปกติ"],warn:["warn","เฝ้าระวัง"],bad:["bad","ผิดปกติ"],na:["info","ไม่มีเซนเซอร์"]};
+
+/* ================= RENDER ================= */
+function metricCard(el,icon,bg,label,val,unit,lv,min,max,lo,hi,extra){
+  const [cls,txt]=LV[lv];
+  const pct=v=>Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));
+  el.innerHTML=`<div class="metric"><div class="micon" style="background:${bg}">${icon}</div><div><div class="mlabel">${label}</div><div class="mval">${val==null?"–":val}<small> ${unit}</small></div></div><span class="pill ${cls}" style="margin-left:auto;align-self:flex-start">${txt}</span></div>
+  <div class="bar"><div class="range" style="left:${pct(min)}%;width:${pct(max)-pct(min)}%"></div>${val==null?"":`<div class="pos" style="left:calc(${pct(val)}% - 2px)"></div>`}</div>
+  <div class="mfoot"><span>เป้าหมาย ${min}–${max} ${unit}</span><span>${extra}</span></div>`;
+}
+function trend(key){
+  const now=Date.now();const p=history.filter(x=>x.t>now-31*60000&&x.t<now-29*60000)[0]||history[Math.max(0,history.length-30)];
+  if(!p||p[key]==null||S[key]==null)return"";const d=S[key]-p[key];
+  const u=key==="co2"?Math.round(d):d.toFixed(1);return(d>0?"▲ +":d<0?"▼ ":"● ")+u+" / 30 นาที";
+}
+function renderMetrics(){
+  const e=evalAll();
+  metricCard($("cTemp"),"🌡️","#fde8e3","อุณหภูมิ",(+S.temp).toFixed(1),"°C",e.temp,cfg.tmin,cfg.tmax,15,40,trend("temp"));
+  metricCard($("cHum"),"💧","#e4effb","ความชื้นสัมพัทธ์",Math.round(S.hum),"%",e.hum,cfg.hmin,cfg.hmax,40,100,trend("hum"));
+  metricCard($("cCo2"),"🫧","#eee8fa","ก๊าซคาร์บอนไดออกไซด์",S.co2==null?null:Math.round(S.co2),"ppm",e.co2,400,cfg.cmax,300,3000,trend("co2"));
+  const worst=[e.temp,e.hum,e.co2].includes("bad")?"bad":[e.temp,e.hum,e.co2].includes("warn")?"warn":"ok";
+  const sp=$("sysPill");sp.className="pill "+worst;$("sysText").textContent={ok:"ระบบทำงานปกติ",warn:"ต้องเฝ้าระวัง",bad:"สภาพแวดล้อมผิดปกติ"}[worst];
+  const cp=$("connPill");
+  if(cfg.mode==="demo"){cp.className="pill info";$("connText").textContent="โหมดจำลอง"}
+  else if(S.online){cp.className="pill ok";$("connText").textContent="ESP32 ออนไลน์"}
+  else{cp.className="pill bad";$("connText").textContent="ESP32 ออฟไลน์"}
+}
+function renderControls(){
+  $("autoSw").checked=S.auto;
+  for(const k of ["fan","mist","light"]){const sw=$("sw-"+k);sw.checked=S[k];sw.disabled=S.auto||(cfg.mode==="device"&&!S.online)}
+  const st=k=>S[k]?"กำลังทำงาน":"หยุด";
+  $("fanNote").textContent="รีเลย์ 1 · "+st("fan");
+  $("mistNote").textContent="รีเลย์ 2 · "+st("mist")+(S.mist&&S.auto?" (สูงสุด "+cfg.mistMax+" วิ)":"");
+  $("lightNote").textContent="รีเลย์ 3 · "+st("light")+" · ตั้งเวลา "+cfg.lightOn+"–"+cfg.lightOff;
+}
+function renderAlerts(){
+  const a=[],e=evalAll();
+  if(cfg.mode==="device"&&!S.online)a.push(["bad","📡","ไม่ได้รับข้อมูลจาก ESP32 ตรวจสอบไฟเลี้ยงบอร์ดและ Wi-Fi"]);
+  if(e.temp!=="ok")a.push([e.temp,"🌡️",S.temp>cfg.tmax?`อุณหภูมิสูง ${(+S.temp).toFixed(1)}°C เกินเป้าหมาย ${cfg.tmax}°C`:`อุณหภูมิต่ำ ${(+S.temp).toFixed(1)}°C ต่ำกว่า ${cfg.tmin}°C`]);
+  if(e.hum!=="ok")a.push([e.hum,"💧",S.hum<cfg.hmin?`ความชื้นต่ำ ${Math.round(S.hum)}% ก้อนเห็ดอาจแห้ง`:`ความชื้นสูง ${Math.round(S.hum)}% เสี่ยงเชื้อรา/ราเขียว`]);
+  if(e.co2==="warn"||e.co2==="bad")a.push([e.co2,"🫧",`CO₂ สูง ${Math.round(S.co2)} ppm ดอกเห็ดอาจก้านยาว หมวกเล็ก`]);
+  if(!S.auto)a.push(["info","✋","อยู่ในโหมดสั่งงานด้วยมือ ระบบจะไม่ควบคุมอุปกรณ์เอง"]);
+  $("alerts").innerHTML=a.length?a.map(([c,i,m])=>`<div class="alert ${c}"><span>${i}</span><span>${m}</span></div>`).join(""):`<div class="alert ok"><span>✅</span><span>ทุกค่าอยู่ในช่วงเหมาะสม</span></div>`;
+}
+function renderLCD(){
+  const pad=(s)=>(s+" ".repeat(16)).slice(0,16);
+  const l1=pad(`T:${(+S.temp).toFixed(1)}C H:${Math.round(S.hum)}%`);
+  const l2=pad(`${S.co2==null?"CO2:--":"CO2:"+Math.round(S.co2)} ${S.fan?"F":"-"}${S.mist?"M":"-"}${S.light?"L":"-"} ${S.auto?"A":"M"}`);
+  $("lcd").textContent=l1+"\n"+l2;
+}
+function renderLog(){$("log").innerHTML=logs.length?logs.map(l=>`<div><time>${fmtT(l.t)}</time><span>${l.msg}</span></div>`).join(""):'<span class="note">ยังไม่มีเหตุการณ์</span>'}
+
+/* ================= CHART ================= */
+function drawChart(cv,data,opts={}){
+  const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=+cv.getAttribute("height");
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.height=H+"px";const g=cv.getContext("2d");g.scale(dpr,dpr);g.clearRect(0,0,W,H);
+  const L=34,R=10,T=10,B=26,pw=W-L-R,ph=H-T-B;
+  const all=[...data,...(opts.fc||[])];if(all.length<2){g.fillStyle="#6b7c77";g.font="14px sans-serif";g.fillText("กำลังรอข้อมูล…",L+10,H/2);return}
+  const t0=all[0].t,t1=all[all.length-1].t,ymin=0,ymax=100;
+  const X=t=>L+(t-t0)/(t1-t0||1)*pw,Y=v=>T+ph-(v-ymin)/(ymax-ymin)*ph;
+  g.font="11px sans-serif";g.fillStyle="#6b7c77";g.strokeStyle="#e6eeea";g.lineWidth=1;
+  for(let v=0;v<=100;v+=20){g.beginPath();g.moveTo(L,Y(v));g.lineTo(W-R,Y(v));g.stroke();g.fillText(v,6,Y(v)+4)}
+  const steps=6;for(let i=0;i<=steps;i++){const t=t0+(t1-t0)*i/steps;const s=fmtT(new Date(t));g.fillText(s,Math.min(W-R-30,Math.max(L,X(t)-14)),H-8)}
+  // target bands
+  g.fillStyle="rgba(43,127,209,.07)";g.fillRect(L,Y(cfg.hmax),pw,Y(cfg.hmin)-Y(cfg.hmax));
+  g.fillStyle="rgba(232,102,74,.08)";g.fillRect(L,Y(cfg.tmax),pw,Y(cfg.tmin)-Y(cfg.tmax));
+  const line=(arr,key,color,div=1,dash=[])=>{g.strokeStyle=color;g.lineWidth=2;g.setLineDash(dash);g.beginPath();let st=false;
+    for(const p of arr){if(p[key]==null){st=false;continue}const x=X(p.t),y=Y(Math.min(100,p[key]/div));st?g.lineTo(x,y):g.moveTo(x,y);st=true}g.stroke();g.setLineDash([])};
+  line(data,"temp","#e8664a");line(data,"hum","#2b7fd1");line(data,"co2","#7a5cc7",10);
+  if(opts.fc){const j=[data[data.length-1],...opts.fc];line(j,"temp","#e8664a",1,[5,4]);line(j,"hum","#2b7fd1",1,[5,4]);line(j,"co2","#7a5cc7",10,[5,4]);
+    g.strokeStyle="#aab8b3";g.setLineDash([2,3]);g.beginPath();g.moveTo(X(data[data.length-1].t),T);g.lineTo(X(data[data.length-1].t),T+ph);g.stroke();g.setLineDash([]);g.fillStyle="#6b7c77";g.fillText("ตอนนี้",X(data[data.length-1].t)+4,T+12)}
+}
+let range1=24,range2=24;
+const slice=h=>history.filter(p=>p.t>=Date.now()-h*3600e3);
+function renderChart(){drawChart($("chart"),slice(range1))}
+
+/* ================= HISTORY PAGE ================= */
+function renderHistory(){
+  const d=slice(range2);drawChart($("chart2"),d);
+  const st=k=>{const v=d.map(p=>p[k]).filter(v=>v!=null);if(!v.length)return["–","–","–"];return[Math.min(...v),Math.max(...v),v.reduce((a,b)=>a+b,0)/v.length]};
+  const t=st("temp"),h=st("hum"),c=st("co2");
+  const inR=d.length?Math.round(d.filter(p=>p.temp>=cfg.tmin&&p.temp<=cfg.tmax&&p.hum>=cfg.hmin&&p.hum<=cfg.hmax).length/d.length*100):0;
+  const f=(v,n=1)=>typeof v==="number"?v.toFixed(n):v;
+  $("hStats").innerHTML=`<div><span>อุณหภูมิเฉลี่ย</span><b>${f(t[2])}°C</b><span>ต่ำสุด ${f(t[0])} · สูงสุด ${f(t[1])}</span></div>
+  <div><span>ความชื้นเฉลี่ย</span><b>${f(h[2],0)}%</b><span>ต่ำสุด ${f(h[0],0)} · สูงสุด ${f(h[1],0)}</span></div>
+  <div><span>CO₂ เฉลี่ย</span><b>${f(c[2],0)} ppm</b><span>สูงสุด ${f(c[1],0)}</span></div>
+  <div><span>เวลาที่อยู่ในช่วงเหมาะสม</span><b>${inR}%</b><span>อุณหภูมิและความชื้น</span></div>`;
+  const rows=[];let next=0;
+  for(let i=d.length-1;i>=0;i--){if(d[i].t<=next||!next){if(!next)next=d[i].t;rows.push(d[i]);next=d[i].t-30*60000}}
+  $("hTable").innerHTML=rows.map(p=>{const ok=p.temp>=cfg.tmin&&p.temp<=cfg.tmax&&p.hum>=cfg.hmin&&p.hum<=cfg.hmax;
+    return`<tr><td>${new Date(p.t).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</td><td>${p.temp}</td><td>${p.hum}</td><td>${p.co2??"–"}</td><td><span class="pill ${ok?"ok":"warn"}" style="padding:2px 8px">${ok?"เหมาะสม":"นอกช่วง"}</span></td></tr>`}).join("");
+}
+function exportCSV(){
+  const rows=[["datetime","temp_c","humidity_pct","co2_ppm"],...history.map(p=>[new Date(p.t).toISOString(),p.temp,p.hum,p.co2??""])];
+  const blob=new Blob(["﻿"+rows.map(r=>r.join(",")).join("\n")],{type:"text/csv"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="nong-spore-"+new Date().toISOString().slice(0,10)+".csv";a.click();
+}
+
+/* ================= AI ================= */
+function regress(key,mins=30){
+  const now=Date.now();const d=history.filter(p=>p.t>now-mins*60000&&p[key]!=null);
+  if(d.length<4)return null;const n=d.length,xs=d.map(p=>(p.t-now)/60000),ys=d.map(p=>p[key]);
+  const mx=xs.reduce((a,b)=>a+b)/n,my=ys.reduce((a,b)=>a+b)/n;let num=0,den=0;
+  xs.forEach((x,i)=>{num+=(x-mx)*(ys[i]-my);den+=(x-mx)**2});const m=den?num/den:0;return{m,b:my-m*mx};
+}
+function renderAI(){
+  const r={temp:regress("temp"),hum:regress("hum"),co2:regress("co2")};
+  const pred=(k,min)=>{if(!r[k])return S[k];let v=r[k].b+r[k].m*min;if(k==="hum")v=Math.max(40,Math.min(99,v));if(k==="co2")v=Math.max(400,v);return v};
+  const fc=[];for(let m=10;m<=60;m+=10)fc.push({t:Date.now()+m*60000,temp:pred("temp",m),hum:pred("hum",m),co2:S.co2==null?null:pred("co2",m)});
+  const f60=fc[fc.length-1];
+  $("fc").innerHTML=`<div><span>อุณหภูมิ</span><b style="color:var(--temp)">${f60.temp.toFixed(1)}°C</b><span>อีก 1 ชม.</span></div><div><span>ความชื้น</span><b style="color:var(--hum)">${Math.round(f60.hum)}%</b><span>อีก 1 ชม.</span></div><div><span>CO₂</span><b style="color:var(--co2)">${f60.co2==null?"–":Math.round(f60.co2)}</b><span>ppm อีก 1 ชม.</span></div>`;
+  drawChart($("chart3"),slice(3),{fc});
+  const adv=[];
+  if(f60.temp>cfg.tmax)adv.push(["warn","🌡️",`คาดว่าอุณหภูมิจะขึ้นถึง ${f60.temp.toFixed(1)}°C ควรเปิดพัดลมหรือพ่นหมอกช่วยลดความร้อน และเช็กว่าผ้าสแลนบังแดดดีหรือไม่`]);
+  if(f60.temp<cfg.tmin)adv.push(["info","🌡️",`คาดว่าอุณหภูมิจะลดเหลือ ${f60.temp.toFixed(1)}°C ลดการเปิดพัดลมและปิดผ้าสแลนให้มิดชิด`]);
+  if(f60.hum<cfg.hmin)adv.push(["warn","💧",`ความชื้นมีแนวโน้มลดเหลือ ${Math.round(f60.hum)}% ระบบจะพ่นหมอกเพิ่ม ตรวจสอบน้ำในถังพ่นหมอก`]);
+  if(f60.hum>cfg.hmax+3)adv.push(["warn","💧","ความชื้นสูงต่อเนื่อง ควรระบายอากาศเพื่อลดความเสี่ยงราเขียวและแมลงหวี่"]);
+  if(f60.co2!=null&&f60.co2>cfg.cmax)adv.push(["warn","🫧","CO₂ มีแนวโน้มสูง เพิ่มรอบการเปิดพัดลมเพื่อให้ดอกเห็ดบานสวย"]);
+  const hr=new Date().getHours();if(hr>=11&&hr<=15)adv.push(["info","☀️","ช่วงบ่ายเป็นช่วงร้อนที่สุดของวัน ระวังอุณหภูมิในตู้สูงเกินเป้าหมาย"]);
+  if(!adv.length)adv.push(["ok","✅","แนวโน้ม 1 ชั่วโมงข้างหน้าอยู่ในช่วงเหมาะสม ไม่ต้องปรับอะไร"]);
+  $("advice").innerHTML=adv.map(([c,i,m])=>`<div class="alert ${c}"><span>${i}</span><span>${m}</span></div>`).join("");
+  const d=slice(6);const sc=d.length?Math.round(d.reduce((a,p)=>{let s=0;s+=p.temp>=cfg.tmin&&p.temp<=cfg.tmax?40:Math.max(0,40-Math.abs(p.temp-(p.temp>cfg.tmax?cfg.tmax:cfg.tmin))*10);
+    s+=p.hum>=cfg.hmin&&p.hum<=cfg.hmax?40:Math.max(0,40-Math.abs(p.hum-(p.hum>cfg.hmax?cfg.hmax:cfg.hmin))*4);
+    s+=p.co2==null||p.co2<=cfg.cmax?20:Math.max(0,20-(p.co2-cfg.cmax)/30);return a+s},0)/d.length):0;
+  $("score").textContent=sc;$("score").style.color=sc>=80?"var(--green)":sc>=60?"var(--amber)":"var(--red)";
+  $("scoreNote").innerHTML=`คะแนนเต็ม 100 จากข้อมูล 6 ชั่วโมงล่าสุด<br>${sc>=80?"สภาพแวดล้อมดีมาก เหมาะกับการออกดอก":sc>=60?"พอใช้ ควรปรับค่าบางส่วน":"ควรตรวจสอบระบบโดยด่วน"}`;
+}
+
+/* ================= SETTINGS ================= */
+function fillSettings(){
+  $("sCrop").innerHTML=Object.entries(CROPS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");
+  $("sMode").value=cfg.mode;$("sIp").value=cfg.ip;$("sPoll").value=cfg.poll;$("sCrop").value=cfg.crop;
+  for(const [id,k] of [["sTmin","tmin"],["sTmax","tmax"],["sHmin","hmin"],["sHmax","hmax"],["sCmax","cmax"],["sMistMax","mistMax"],["sLightOn","lightOn"],["sLightOff","lightOff"]])$(id).value=cfg[k];
+  $("cropName").textContent=CROPS[cfg.crop]?.name||"";
+}
+$("sCrop").onchange=e=>{const c=CROPS[e.target.value];if(c.tmin){$("sTmin").value=c.tmin;$("sTmax").value=c.tmax;$("sHmin").value=c.hmin;$("sHmax").value=c.hmax;$("sCmax").value=c.cmax}};
+$("saveBtn").onclick=()=>{
+  const old=cfg.mode;
+  cfg={...cfg,mode:$("sMode").value,ip:$("sIp").value.trim(),poll:Math.max(2,+$("sPoll").value||5),crop:$("sCrop").value,
+    tmin:+$("sTmin").value,tmax:+$("sTmax").value,hmin:+$("sHmin").value,hmax:+$("sHmax").value,cmax:+$("sCmax").value,mistMax:+$("sMistMax").value,
+    lightOn:$("sLightOn").value||"06:00",lightOff:$("sLightOff").value||"18:00"};
+  if(cfg.mode==="device"&&!cfg.ip){toast("กรุณาใส่ IP ของ ESP32");return}
+  persist();fillSettings();addLog("บันทึกการตั้งค่า: "+CROPS[cfg.crop].name);toast("บันทึกแล้ว");
+  if(old!==cfg.mode)start();else{restartTimer();pushConfig()}
+  renderAll();
+};
+$("testBtn").onclick=async()=>{
+  const ip=$("sIp").value.trim();if(!ip){$("testRes").textContent="ใส่ IP ก่อน";return}
+  $("testRes").textContent="กำลังทดสอบ…";const keep=cfg.ip;cfg.ip=ip;
+  try{const d=await api("/api/status");$("testRes").innerHTML=`<span style="color:var(--green)">✔ เชื่อมต่อได้ · ${d.temp}°C ${d.hum}%</span>`}
+  catch(e){$("testRes").innerHTML=`<span style="color:var(--red)">✘ เชื่อมต่อไม่ได้</span>`}
+  cfg.ip=keep;
+};
+
+/* ================= WIRING ================= */
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("hidden",s.id!=="page-"+b.dataset.page));
+  renderAll();
+});
+const tabs=(id,cb)=>document.querySelectorAll("#"+id+" button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#"+id+" button").forEach(x=>x.classList.toggle("active",x===b));cb(+b.dataset.r);renderAll()});
+tabs("rangeTabs",r=>range1=r);tabs("hRangeTabs",r=>range2=r);
+["fan","mist","light"].forEach(k=>$("sw-"+k).onchange=e=>setDev(k,e.target.checked));
+$("autoSw").onchange=e=>setAuto(e.target.checked);
+$("csvBtn").onclick=exportCSV;
+$("clearLog").onclick=e=>{e.preventDefault();logs=[];renderLog()};
+window.addEventListener("resize",()=>renderAll());
+
+function renderAll(){
+  renderMetrics();renderControls();renderAlerts();renderLCD();
+  const vis=id=>!$(id).classList.contains("hidden");
+  if(vis("page-home"))renderChart();
+  if(vis("page-history"))renderHistory();
+  if(vis("page-ai"))renderAI();
+}
+function tickClock(){const d=new Date();$("clockDate").textContent=d.toLocaleDateString("th-TH",{weekday:"short",day:"numeric",month:"short",year:"numeric"});$("clockTime").textContent=d.toLocaleTimeString("th-TH")}
+
+let timer=null;
+function restartTimer(){
+  clearInterval(timer);
+  if(cfg.mode==="demo"){timer=setInterval(()=>{simStep(1);autoControl();pushHistory();renderAll()},2000)}
+  else{timer=setInterval(pollDevice,cfg.poll*1000)}
+}
+async function start(){
+  S.online=false;
+  if(cfg.mode==="demo"){seedHistory();addLog("เริ่มโหมดจำลองข้อมูล")}
+  else{history=[];addLog("กำลังเชื่อมต่อ ESP32 "+cfg.ip+"…");await loadDeviceHistory();await pollDevice()}
+  restartTimer();renderAll();
+}
+fillSettings();tickClock();setInterval(tickClock,1000);start();
+</script>
+</body>
+</html>

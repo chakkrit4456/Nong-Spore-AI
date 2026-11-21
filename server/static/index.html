@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nong Spore AI</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f7d4f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12a9 7 0 0 1 18 0z'/%3E%3Cpath d='M9 12v6a3 3 0 0 0 6 0v-6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="/vendor/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f4f6f1;--card:#fff;--ink:#1d2a1f;--mute:#66715f;--line:#e3e8dd;--acc:#2f7d4f;--acc2:#e3f1e7;--t:#d9622b;--h:#2b74c9;--warn:#c98a00;--bad:#c63b3b;--ok:#2f9b5a;--lcd:#9fc23a;--lcdink:#1c2a05}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111611;--card:#1a211b;--ink:#e6ede4;--mute:#97a393;--line:#2b352c;--acc:#5fc287;--acc2:#1f3426;--t:#f08a55;--h:#61a3ee}}
+:root[data-theme="dark"]{--bg:#111611;--card:#1a211b;--ink:#e6ede4;--mute:#97a393;--line:#2b352c;--acc:#5fc287;--acc2:#1f3426;--t:#f08a55;--h:#61a3ee}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:15px}
+.i{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
+.i.lg{width:22px;height:22px}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+header h1{font-size:18px;margin:0;flex:1;min-width:180px;display:flex;gap:10px;align-items:center}
+header h1 .logo{width:38px;height:38px;border-radius:10px;background:var(--acc);color:#fff;display:grid;place-items:center}
+header h1 small{display:block;font-size:12px;color:var(--mute);font-weight:400}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;background:var(--acc2);font-size:13px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mute)}.dot.on{background:var(--ok)}.dot.off{background:var(--bad)}
+input,select,button{font:inherit;color:inherit}
+input,select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px}
+button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:500;display:inline-flex;gap:6px;align-items:center;justify-content:center}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button.sm{padding:3px 9px;font-weight:400;font-size:13px}
+button:disabled{opacity:.45;cursor:not-allowed}
+main{max-width:1240px;margin:0 auto;padding:16px;display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;grid-column:span 12;min-width:0}
+.card h3{margin:0 0 12px;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.card h3>span:first-child{display:inline-flex;gap:8px;align-items:center}
+.card h3 .i{color:var(--acc)}
+.kpi{grid-column:span 3}.c8{grid-column:span 8}.c4{grid-column:span 4}.c6{grid-column:span 6}
+@media(max-width:900px){.kpi{grid-column:span 6}.c8,.c4,.c6{grid-column:span 12}}
+@media(max-width:480px){.kpi{grid-column:span 12}}
+.kpi .lbl{color:var(--mute);font-size:13px;display:flex;gap:6px;align-items:center}
+.kpi .val{font-size:34px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+.kpi .val small{font-size:16px;color:var(--mute);font-weight:500}.kpi .sub{font-size:13px;color:var(--mute)}
+.bar{height:6px;border-radius:9px;background:var(--line);margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;border-radius:9px}
+.fan{width:40px;height:40px;float:right;color:var(--mute)}.fan.spin{animation:sp .8s linear infinite;color:var(--acc)}@keyframes sp{to{transform:rotate(360deg)}}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}.seg button{background:transparent;color:var(--ink);border-radius:0;padding:4px 10px;font-weight:400}.seg button.on{background:var(--acc);color:#fff}
+.chartbox{position:relative;height:300px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0}.row label{min-width:120px;color:var(--mute)}
+.switch{display:flex;gap:8px}.switch button{flex:1}
+.lcd{background:var(--lcd);color:var(--lcdink);font-family:"JetBrains Mono",monospace;font-size:20px;padding:14px;border-radius:8px;border:6px solid #23301b;white-space:pre;letter-spacing:2px;overflow:hidden;box-shadow:inset 0 0 14px rgba(0,0,0,.25)}
+ul.list{list-style:none;padding:0;margin:0;max-height:260px;overflow:auto}ul.list li{padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;display:flex;gap:8px;align-items:flex-start}
+ul.list time{color:var(--mute);font-variant-numeric:tabular-nums;min-width:86px}
+ul.list .i{color:var(--acc);margin-top:2px}ul.list .err .i{color:var(--bad)}
+.alert{padding:9px 12px;border-radius:9px;margin-bottom:8px;font-size:14px;border-left:4px solid;display:flex;gap:8px;align-items:flex-start}
+.alert.bad{background:color-mix(in srgb,var(--bad) 12%,transparent);border-color:var(--bad)}.alert.bad .i{color:var(--bad)}
+.alert.warn{background:color-mix(in srgb,var(--warn) 14%,transparent);border-color:var(--warn)}.alert.warn .i{color:var(--warn)}
+.alert.ok{background:color-mix(in srgb,var(--ok) 12%,transparent);border-color:var(--ok)}.alert.ok .i{color:var(--ok)}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}th{color:var(--mute);font-weight:500}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;cursor:zoom-in;background:var(--line)}
+#zoom{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}#zoom img{max-width:100%;max-height:100%;border-radius:10px}
+.muted{color:var(--mute);font-size:13px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-mush" viewBox="0 0 24 24"><path d="M3 12a9 7 0 0 1 18 0z"/><path d="M9 12v6a3 3 0 0 0 6 0v-6"/></symbol>
+  <symbol id="i-temp" viewBox="0 0 24 24"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></symbol>
+  <symbol id="i-fan" viewBox="0 0 24 24"><path d="M10.83 16.38a6.08 6.08 0 0 1-8.62-7l5.41 1.45a6.08 6.08 0 0 1 7-8.62l-1.45 5.41a6.08 6.08 0 0 1 8.62 7l-5.41-1.45a6.08 6.08 0 0 1-7 8.62l1.45-5.41Z"/><path d="M12 12v.01"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>
+  <symbol id="i-slider" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-bars" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></symbol>
+  <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M12 3v18"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
+  <symbol id="i-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 18a6 6 0 0 0 0-12v12z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0M2 8.82a15 15 0 0 1 20 0M12 20h.01"/></symbol>
+  <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol>
+</svg>
+<script>const I=(n,c="")=>`<svg class="i ${c}"><use href="#i-${n}"/></svg>`;</script>
+
+<header>
+  <h1><span class="logo"><svg class="i lg"><use href="#i-mush"/></svg></span><span>Nong Spore AI <small>ระบบติดตามโรงเรือนเพาะเห็ด · ESP32 + DHT11</small></span></h1>
+  <span class="pill"><span class="dot" id="connDot"></span><span id="connTxt">กำลังโหลด...</span></span>
+  <button class="ghost" id="btnTheme" title="สลับธีม" aria-label="สลับธีม"><svg class="i"><use href="#i-contrast"/></svg></button>
+</header>
+
+<main>
+  <section class="card kpi"><div class="lbl"><svg class="i"><use href="#i-temp"/></svg>อุณหภูมิ</div><div class="val" id="kT">--<small>°C</small></div><div class="sub" id="kTs">-</div><div class="bar"><i id="bT"></i></div></section>
+  <section class="card kpi"><div class="lbl"><svg class="i"><use href="#i-drop"/></svg>ความชื้นสัมพัทธ์</div><div class="val" id="kH">--<small>%</small></div><div class="sub" id="kHs">-</div><div class="bar"><i id="bH"></i></div></section>
+  <section class="card kpi"><svg class="i fan" id="fanIco"><use href="#i-fan"/></svg>
+    <div class="lbl"><svg class="i"><use href="#i-fan"/></svg>พัดลมระบายอากาศ</div><div class="val" id="kF">--</div><div class="sub" id="kFs">-</div></section>
+  <section class="card kpi"><div class="lbl"><svg class="i"><use href="#i-gauge"/></svg>คะแนนสภาพแวดล้อม</div><div class="val" id="kS">--<small>/100</small></div><div class="sub" id="kSs">-</div><div class="bar"><i id="bS"></i></div></section>
+
+  <section class="card c8">
+    <h3><span><svg class="i"><use href="#i-chart"/></svg>กราฟอุณหภูมิและความชื้น</span>
+      <span class="seg" id="rangeSeg"><button data-h="1">1 ชม.</button><button data-h="6" class="on">6 ชม.</button><button data-h="24">24 ชม.</button><button data-h="168">7 วัน</button><button data-h="720">30 วัน</button></span></h3>
+    <div class="chartbox"><canvas id="chart"></canvas></div>
+    <p class="muted">เส้นประสีส้มคือเกณฑ์เปิดพัดลม เส้นประสีเทาคือเกณฑ์ปิดพัดลม แถบจางด้านล่างคือช่วงที่พัดลมทำงาน</p>
+  </section>
+
+  <section class="card c4">
+    <h3><span><svg class="i"><use href="#i-slider"/></svg>ควบคุม</span></h3>
+    <div class="row"><label>โหมด</label><div class="seg" id="modeSeg"><button data-m="auto">อัตโนมัติ</button><button data-m="manual">สั่งเอง</button></div></div>
+    <div class="switch"><button id="fanOn"><svg class="i"><use href="#i-power"/></svg>เปิดพัดลม</button><button class="ghost" id="fanOff"><svg class="i"><use href="#i-power"/></svg>ปิดพัดลม</button></div>
+    <p class="muted" id="modeHint"></p>
+    <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+    <div class="row"><label>เปิดพัดลมเมื่อ ≥</label><input type="number" id="cfgOn" step="0.5" style="width:80px"> °C</div>
+    <div class="row"><label>ปิดพัดลมเมื่อ &lt;</label><input type="number" id="cfgOff" step="0.5" style="width:80px"> °C</div>
+    <button id="saveCfg"><svg class="i"><use href="#i-save"/></svg>บันทึกเกณฑ์</button>
+    <p class="muted" id="cfgMsg">คำสั่งจะส่งถึงบอร์ดในรอบส่งข้อมูลถัดไป (ไม่เกิน 10 วินาที)</p>
+  </section>
+
+  <section class="card c4"><h3><span><svg class="i"><use href="#i-monitor"/></svg>จอ LCD ที่กล่องควบคุม</span></h3><div class="lcd" id="lcd">
+                </div>
+    <p class="muted"><svg class="i"><use href="#i-wifi"/></svg> <span id="devInfo">-</span></p></section>
+  <section class="card c4"><h3><span><svg class="i"><use href="#i-bell"/></svg>การแจ้งเตือน</span></h3><div id="alerts"></div></section>
+  <section class="card c4"><h3><span><svg class="i"><use href="#i-list"/></svg>บันทึกเหตุการณ์</span><button class="ghost sm" id="clrLog"><svg class="i"><use href="#i-trash"/></svg>ล้าง</button></h3><ul class="list" id="log"></ul></section>
+
+  <section class="card c6"><h3><span><svg class="i"><use href="#i-bars"/></svg>สรุปข้อมูล</span><span class="muted" id="sumRange"></span></h3>
+    <table><thead><tr><th></th><th>ต่ำสุด</th><th>เฉลี่ย</th><th>สูงสุด</th></tr></thead><tbody id="sumBody"></tbody></table>
+    <p class="muted" id="sumExtra"></p></section>
+  <section class="card c6"><h3><span><svg class="i"><use href="#i-bulb"/></svg>คำแนะนำ</span>
+      <select id="species"><option value="oyster">เห็ดนางฟ้า / นางรม</option><option value="straw">เห็ดฟาง</option><option value="ear">เห็ดหูหนู</option><option value="lingzhi">เห็ดหลินจือ</option></select></h3>
+    <p class="muted" id="target"></p><ul class="list" id="tips"></ul></section>
+
+  <section class="card"><h3><span><svg class="i"><use href="#i-table"/></svg>ตารางข้อมูล</span>
+      <a id="csv" href="/api/export.csv?hours=24" download><button class="ghost sm" tabindex="-1"><svg class="i"><use href="#i-download"/></svg>ดาวน์โหลด CSV</button></a></h3>
+    <div style="overflow:auto;max-height:320px"><table><thead><tr><th>เวลา</th><th>อุณหภูมิ (°C)</th><th>ความชื้น (%)</th><th>พัดลมทำงาน</th></tr></thead><tbody id="tbl"></tbody></table></div></section>
+
+  <section class="card" id="galCard"><h3><span><svg class="i"><use href="#i-image"/></svg>ภาพโรงเรือน</span></h3><div class="gal" id="gal"></div></section>
+</main>
+<div id="zoom"><img alt=""></div>
+
+<script>
+const PROFILES={
+ oyster:{n:"เห็ดนางฟ้า / นางรม",t:[25,30],h:[80,90]},
+ straw:{n:"เห็ดฟาง",t:[30,35],h:[80,90]},
+ ear:{n:"เห็ดหูหนู",t:[25,32],h:[80,90]},
+ lingzhi:{n:"เห็ดหลินจือ",t:[25,30],h:[85,95]}};
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{return localStorage.getItem(k)??d}catch{return d}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
+let S=null,H={data:[],summary:{}},rangeH=+store.get("ns_range",6);
+
+const fmtT=d=>d.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"});
+const fmtDT=d=>d.toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+const fmtDur=s=>{s=Math.floor(s||0);const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?`${d} วัน ${h} ชม.`:h?`${h} ชม. ${m} นาที`:`${m} นาที`};
+const f1=v=>v==null?"-":(+v).toFixed(1);
+async function api(path,opt={}){const r=await fetch(path,{...opt,headers:{"Content-Type":"application/json"}});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||r.status);return j}
+
+async function loadStatus(){
+  try{S=await api("/api/status");
+    $("connDot").className="dot "+(S.online?"on":"off");
+    $("connTxt").textContent=S.online?"บอร์ดออนไลน์":S.lastSeen?"บอร์ดออฟไลน์ · ล่าสุด "+fmtDT(new Date(S.lastSeen)):"ยังไม่เคยได้รับข้อมูลจากบอร์ด";
+    if(document.activeElement!==$("species"))$("species").value=S.species||"oyster";
+    render();
+  }catch(e){$("connDot").className="dot off";$("connTxt").textContent="เชื่อมต่อเซิร์ฟเวอร์ไม่ได้"}
+}
+async function loadHistory(){try{H=await api("/api/history?hours="+rangeH);renderChart();renderSummary();renderTable()}catch{}}
+async function loadEvents(){try{const l=await api("/api/events");
+  $("log").innerHTML=l.length?l.map(e=>`<li class="${e.level==="error"?"err":""}">${I(e.level==="error"?"warn":"check")}<time>${fmtDT(new Date(e.ts))}</time><span>${e.msg}</span></li>`).join(""):'<li class="muted">ยังไม่มีเหตุการณ์</li>'}catch{}}
+
+function score(t,h,p){if(t==null||h==null)return null;const d=(v,[a,b],k)=>v<a?(a-v)*k:v>b?(v-b)*k:0;return Math.max(0,Math.round(100-d(t,p.t,9)-d(h,p.h,3)))}
+function render(){
+  if(!S)return;
+  const p=PROFILES[$("species").value],live=S.online&&S.sensorOk;
+  $("kT").innerHTML=(S.temp==null?"--":f1(S.temp))+"<small>°C</small>";$("kH").innerHTML=(S.hum==null?"--":Math.round(S.hum))+"<small>%</small>";
+  const tState=S.temp==null?"-":S.temp<p.t[0]?"เย็นเกินไป":S.temp>p.t[1]?"ร้อนเกินไป":"เหมาะสม";
+  const hState=S.hum==null?"-":S.hum<p.h[0]?"แห้งเกินไป":S.hum>p.h[1]?"ชื้นเกินไป":"เหมาะสม";
+  const stale=live?"":" · ค่าล่าสุดที่บันทึก";
+  $("kTs").textContent=`${tState} · เป้าหมาย ${p.t[0]}–${p.t[1]}°C${stale}`;$("kHs").textContent=`${hState} · เป้าหมาย ${p.h[0]}–${p.h[1]}%`;
+  const bar=(el,v,lo,hi,good)=>{$(el).style.width=v==null?"0":Math.max(3,Math.min(100,(v-lo)/(hi-lo)*100))+"%";$(el).style.background=good?"var(--ok)":"var(--warn)"};
+  bar("bT",S.temp,15,40,tState==="เหมาะสม");bar("bH",S.hum,40,100,hState==="เหมาะสม");
+  const fanOn=S.online&&S.fan;
+  $("kF").textContent=S.online?(S.fan?"ทำงาน":"หยุด"):"--";$("kF").style.color=fanOn?"var(--acc)":"";$("fanIco").classList.toggle("spin",fanOn);
+  $("kFs").textContent=`${S.auto?"อัตโนมัติ":"สั่งเอง"} · ทำงานสะสม ${fmtDur(S.fanOnSec)}`;
+  const sc=score(S.temp,S.hum,p);$("kS").innerHTML=(sc??"--")+"<small>/100</small>";
+  $("kSs").textContent=sc==null?"-":sc>=85?"ดีมาก เหมาะกับการออกดอก":sc>=60?"พอใช้ ควรปรับเล็กน้อย":"ไม่เหมาะ ควรแก้ไขทันที";
+  $("bS").style.width=(sc??0)+"%";$("bS").style.background=sc>=85?"var(--ok)":sc>=60?"var(--warn)":"var(--bad)";
+  document.querySelectorAll("#modeSeg button").forEach(b=>b.classList.toggle("on",(b.dataset.m==="auto")===S.auto));
+  $("fanOn").disabled=!S.auto&&S.fan;$("fanOff").disabled=!S.auto&&!S.fan;
+  $("modeHint").textContent=S.auto?`อัตโนมัติ: เปิดเมื่อ ≥ ${S.tempOn}°C ปิดเมื่อ < ${S.tempOff}°C (กดปุ่มพัดลมเพื่อสลับเป็นสั่งเอง)`:"สั่งเอง: พัดลมจะไม่ทำงานตามอุณหภูมิ อย่าลืมกลับไปโหมดอัตโนมัติ";
+  if(document.activeElement!==$("cfgOn"))$("cfgOn").value=S.tempOn;if(document.activeElement!==$("cfgOff"))$("cfgOff").value=S.tempOff;
+  const pad=s=>(s+" ".repeat(16)).slice(0,16);
+  $("lcd").textContent=!S.online?pad("NO CONNECTION")+"\n"+pad("CHECK ESP32"):S.sensorOk?pad(`T:${f1(S.temp)}°C H:${Math.round(S.hum)}%`)+"\n"+pad(`Fan:${S.fan?"ON ":"OFF"} ${S.deviceAuto?"AUTO":"MANUAL"}`):pad("SENSOR ERROR")+"\n"+pad("CHECK DHT11");
+  $("devInfo").textContent=S.lastSeen?`IP ${S.ip||"-"} · ทำงานมา ${fmtDur(S.uptime)} · สัญญาณ ${S.rssi??"-"} dBm${S.rssi!=null?" ("+(S.rssi>-60?"แรง":S.rssi>-75?"ปานกลาง":"อ่อน")+")":""}`:"ยังไม่มีข้อมูลจากบอร์ด";
+  renderAlerts(p,tState,hState);renderTips(p);
+}
+function renderAlerts(p,tState,hState){
+  const a=[];
+  if(!S.lastSeen)a.push(["warn","ยังไม่ได้รับข้อมูลจากบอร์ด ให้ตั้งค่า SERVER_URL และ DEVICE_TOKEN ในเฟิร์มแวร์"]);
+  else if(!S.online)a.push(["bad","บอร์ดขาดการเชื่อมต่อ ให้ตรวจไฟเลี้ยงและ Wi-Fi ของบอร์ด"]);
+  else{
+    if(!S.sensorOk)a.push(["bad","อ่านค่าเซนเซอร์ DHT11 ไม่ได้ ระบบปิดพัดลมเพื่อความปลอดภัย ให้ตรวจสายที่ GPIO4"]);
+    if(S.temp!=null&&S.temp>=S.tempOn+3)a.push(["bad",`อุณหภูมิสูงมาก (${f1(S.temp)}°C) ควรพรางแสงหรือรดน้ำหลังคาเพิ่ม`]);
+    else if(tState==="ร้อนเกินไป")a.push(["warn",`อุณหภูมิสูงกว่าที่${p.n}ต้องการ`]);
+    if(tState==="เย็นเกินไป")a.push(["warn","อุณหภูมิต่ำกว่าที่เหมาะสม ควรลดการระบายอากาศ"]);
+    if(hState==="แห้งเกินไป")a.push([S.hum<70?"bad":"warn",`ความชื้นต่ำ (${Math.round(S.hum)}%) ควรพ่นน้ำเป็นละอองหรือรดน้ำพื้นโรงเรือน`]);
+    if(hState==="ชื้นเกินไป")a.push(["warn","ความชื้นสูงเกิน เสี่ยงเชื้อรา ควรเปิดระบายอากาศ"]);
+    if(!S.auto)a.push(["warn","อยู่ในโหมดสั่งเอง พัดลมจะไม่ทำงานตามอุณหภูมิ"]);
+    if(!a.length)a.push(["ok","สภาพแวดล้อมปกติ ไม่มีสิ่งที่ต้องแก้ไข"]);
+  }
+  $("alerts").innerHTML=a.map(([c,m])=>`<div class="alert ${c}">${I(c==="ok"?"check":"warn")}<span>${m}</span></div>`).join("");
+}
+function renderTips(p){
+  $("target").textContent=`ค่าเป้าหมาย: อุณหภูมิ ${p.t[0]}–${p.t[1]}°C · ความชื้น ${p.h[0]}–${p.h[1]}%`;
+  const t=[];
+  if(S.tempOn>p.t[1]+1)t.push(`เกณฑ์เปิดพัดลม (${S.tempOn}°C) สูงกว่าที่${p.n}ทนได้ แนะนำให้ตั้งไว้ประมาณ ${p.t[1]}°C`);
+  if(S.tempOff<p.t[0])t.push(`เกณฑ์ปิดพัดลม (${S.tempOff}°C) ต่ำเกินไป พัดลมอาจทำงานนานเกินจำเป็น`);
+  if(S.hum!=null&&S.hum<p.h[0])t.push("ความชื้นต่ำ: ระบบนี้ยังไม่มีปั๊มพ่นหมอก ควรรดน้ำพื้นและผนังวันละ 2–3 ครั้ง หรือเพิ่มรีเลย์ช่องที่ 2 ต่อปั๊มพ่นหมอก");
+  t.push("DHT11 คลาดเคลื่อนได้ ±2°C และ ±5%RH ถ้าต้องการความแม่นยำมากขึ้นให้เปลี่ยนเป็น DHT22 หรือ SHT31");
+  t.push("ติดตั้งเซนเซอร์ในระดับเดียวกับก้อนเชื้อ ไม่ให้โดนแดดหรือน้ำโดยตรง");
+  t.push("ระบายอากาศช่วงเช้าและเย็นเพื่อลด CO₂ ดอกเห็ดจะบานสวยและก้านไม่ยาว");
+  $("tips").innerHTML=t.map(x=>`<li>${I("bulb")}<span>${x}</span></li>`).join("");
+}
+let chart;
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function renderChart(){
+  if(typeof Chart==="undefined"){$("chart").parentElement.innerHTML='<p class="muted">โหลดไลบรารีกราฟไม่ได้</p>';renderChart=()=>{};return}
+  const d=H.data,long=rangeH>24,lab=d.map(x=>long?fmtDT(new Date(x.ts)):fmtT(new Date(x.ts)));
+  const on=S?.tempOn??30,off=S?.tempOff??28;
+  const ds=[
+    {label:"อุณหภูมิ (°C)",data:d.map(x=>x.temp),borderColor:css("--t"),backgroundColor:css("--t"),yAxisID:"y",tension:.3,pointRadius:0,borderWidth:2},
+    {label:"ความชื้น (%)",data:d.map(x=>x.hum),borderColor:css("--h"),backgroundColor:css("--h"),yAxisID:"y1",tension:.3,pointRadius:0,borderWidth:2},
+    {label:"เปิดพัดลม",data:d.map(()=>on),borderColor:css("--t"),borderDash:[6,4],borderWidth:1,pointRadius:0,yAxisID:"y"},
+    {label:"ปิดพัดลม",data:d.map(()=>off),borderColor:css("--mute"),borderDash:[6,4],borderWidth:1,pointRadius:0,yAxisID:"y"},
+    {type:"bar",label:"พัดลมทำงาน",data:d.map(x=>x.fan||null),backgroundColor:css("--acc")+"33",yAxisID:"yf",barPercentage:1,categoryPercentage:1}];
+  const grid=css("--line"),tick=css("--mute");
+  if(!chart){chart=new Chart($("chart"),{type:"line",data:{labels:lab,datasets:ds},options:{animation:false,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{labels:{color:tick,boxWidth:12,font:{family:"IBM Plex Sans Thai"}}},tooltip:{filter:i=>i.datasetIndex<2}},
+    scales:{x:{ticks:{color:tick,maxTicksLimit:8},grid:{color:grid}},y:{position:"left",ticks:{color:css("--t")},grid:{color:grid},suggestedMin:22,suggestedMax:34},
+      y1:{position:"right",ticks:{color:css("--h")},grid:{display:false},suggestedMin:60,suggestedMax:100},yf:{display:false,min:0,max:1}}}})}
+  else{chart.data.labels=lab;chart.data.datasets.forEach((x,i)=>x.data=ds[i].data);chart.update("none")}
+}
+function renderSummary(){
+  const s=H.summary||{},lbl=rangeH>=24?`${rangeH/24} วัน`:`${rangeH} ชม.`;
+  $("sumRange").textContent=`ย้อนหลัง ${lbl} · ${s.n||0} รายการ`;
+  if(!s.n){$("sumBody").innerHTML='<tr><td colspan="4" class="muted">ยังไม่มีข้อมูลในช่วงนี้</td></tr>';$("sumExtra").textContent="";return}
+  $("sumBody").innerHTML=`<tr><td>อุณหภูมิ (°C)</td><td>${f1(s.tmin)}</td><td>${f1(s.tavg)}</td><td>${f1(s.tmax)}</td></tr><tr><td>ความชื้น (%)</td><td>${f1(s.hmin)}</td><td>${f1(s.havg)}</td><td>${f1(s.hmax)}</td></tr>`;
+  const p=PROFILES[$("species").value],good=H.data.filter(x=>score(x.temp,x.hum,p)>=85).length;
+  $("sumExtra").textContent=`พัดลมทำงาน ${(s.fan*100).toFixed(0)}% ของเวลา · อยู่ในช่วงที่เหมาะกับ${p.n} ${H.data.length?(good/H.data.length*100).toFixed(0):0}% ของเวลา`;
+  $("csv").href="/api/export.csv?hours="+rangeH;
+}
+function renderTable(){
+  const r=[...H.data].reverse();
+  $("tbl").innerHTML=r.length?r.map(x=>`<tr><td>${fmtDT(new Date(x.ts))}</td><td>${f1(x.temp)}</td><td>${x.hum==null?"-":Math.round(x.hum)}</td><td>${Math.round((x.fan||0)*100)}%</td></tr>`).join(""):'<tr><td colspan="4" class="muted">ยังไม่มีข้อมูล</td></tr>';
+}
+
+async function control(body){
+  try{S={...S,...await api("/api/control",{method:"POST",body:JSON.stringify(body)})};render();loadEvents();return true}
+  catch(e){alert("ส่งคำสั่งไม่สำเร็จ: "+e.message);return false}
+}
+$("fanOn").onclick=()=>control({fan:true});
+$("fanOff").onclick=()=>control({fan:false});
+document.querySelectorAll("#modeSeg button").forEach(b=>b.onclick=()=>{const a=b.dataset.m==="auto";if(S&&a!==S.auto)control(a?{auto:true}:{auto:false,fan:S.fan})});
+$("saveCfg").onclick=async()=>{const on=+$("cfgOn").value,off=+$("cfgOff").value;
+  if(!(off<on)){$("cfgMsg").textContent="ค่าปิดต้องน้อยกว่าค่าเปิด";return}
+  if(await control({tempOn:on,tempOff:off})){$("cfgMsg").textContent=`บันทึกแล้ว: เปิด ${on}°C / ปิด ${off}°C บอร์ดจะได้รับค่าใหม่ภายใน 10 วินาที`;loadHistory()}};
+$("species").onchange=()=>{control({species:$("species").value});renderSummary()};
+$("clrLog").onclick=async()=>{if(!confirm("ล้างบันทึกเหตุการณ์ทั้งหมด?"))return;await fetch("/api/events",{method:"DELETE"});loadEvents()};
+document.querySelectorAll("#rangeSeg button").forEach(b=>{b.classList.toggle("on",+b.dataset.h===rangeH);b.onclick=()=>{rangeH=+b.dataset.h;store.set("ns_range",rangeH);
+  document.querySelectorAll("#rangeSeg button").forEach(x=>x.classList.toggle("on",x===b));loadHistory()}});
+$("btnTheme").onclick=()=>{const cur=document.documentElement.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+  const n=cur==="dark"?"light":"dark";document.documentElement.dataset.theme=n;store.set("ns_theme",n);if(chart){chart.destroy();chart=null}renderChart()};
+fetch("/img/list.json").then(r=>r.ok?r.json():[]).then(l=>{if(!l.length){$("galCard").remove();return}
+  $("gal").innerHTML=l.map((f,i)=>`<img src="/img/${encodeURIComponent(f)}" alt="ภาพโรงเรือน ${i+1}" loading="lazy">`).join("")}).catch(()=>$("galCard").remove());
+$("gal").onclick=e=>{if(e.target.tagName==="IMG"){$("zoom").querySelector("img").src=e.target.src;$("zoom").style.display="flex"}};
+$("zoom").onclick=()=>$("zoom").style.display="none";
+
+const th=store.get("ns_theme",null);if(th)document.documentElement.dataset.theme=th;
+loadStatus().then(loadHistory);loadEvents();
+setInterval(loadStatus,5000);setInterval(loadHistory,60000);setInterval(loadEvents,15000);
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+#include <Wire.h>
+#include <DHT.h>
+#include <LiquidCrystal_I2C.h>
+
+// กำหนดขาอุปกรณ์
+#define DHTPIN 4
+#define DHTTYPE DHT11
+#define RELAY_PIN 26
+
+// กำหนด LCD
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// เริ่มต้นเซนเซอร์
+DHT dht(DHTPIN, DHTTYPE);
+
+// ตั้งค่าอุณหภูมิ
+#define TEMP_ON 30.0
+#define TEMP_OFF 28.0
+
+bool fanState = false;
+
+void setup() {
+  Serial.begin(115200);
+
+  // เริ่มต้นอุปกรณ์
+  Wire.begin(21, 22);
+  dht.begin();
+
+  lcd.init();
+  lcd.backlight();
+  lcd.clear();
+
+  pinMode(RELAY_PIN, OUTPUT);
+
+  // Relay Active LOW: HIGH = ปิด
+  digitalWrite(RELAY_PIN, HIGH);
+
+  lcd.setCursor(0, 0);
+  lcd.print("MUSHROOM HOUSE");
+  lcd.setCursor(0, 1);
+  lcd.print("SYSTEM STARTING");
+  delay(2000);
+  lcd.clear();
+
+  Serial.println("MUSHROOM HOUSE READY");
+}
+
+void loop() {
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+
+  // ตรวจสอบเซนเซอร์
+  if (isnan(humidity) || isnan(temperature)) {
+    Serial.println("SENSOR ERROR");
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("SENSOR ERROR");
+    lcd.setCursor(0, 1);
+    lcd.print("CHECK DHT11");
+
+    // เมื่ออ่านค่าไม่ได้ ให้ปิดพัดลม
+    fanState = false;
+    digitalWrite(RELAY_PIN, HIGH);
+
+    delay(2500);
+    return;
+  }
+
+  // ควบคุมพัดลมแบบมีช่วงหน่วง
+  if (temperature >= TEMP_ON) {
+    fanState = true;
+  }
+  else if (temperature < TEMP_OFF) {
+    fanState = false;
+  }
+
+  // สั่ง Relay
+  digitalWrite(RELAY_PIN, fanState ? LOW : HIGH);
+
+  // แสดงผลบน LCD
+  lcd.setCursor(0, 0);
+  lcd.print("T:");
+  lcd.print(temperature, 1);
+  lcd.print((char)223);
+  lcd.print("C H:");
+  lcd.print(humidity, 0);
+  lcd.print("%   ");
+
+  lcd.setCursor(0, 1);
+  lcd.print("Fan: ");
+  lcd.print(fanState ? "ON " : "OFF");
+  lcd.print("          ");
+
+  // แสดงผล Serial Monitor
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.print(" C | Humidity: ");
+  Serial.print(humidity);
+  Serial.print(" % | Fan: ");
+  Serial.println(fanState ? "ON" : "OFF");
+
+  delay(2500);
+}

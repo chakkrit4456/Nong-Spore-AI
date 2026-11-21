@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=VT323&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap">
+<style>
+body{margin:0;background:#E7E3DA;font-family:'IBM Plex Sans Thai',system-ui,sans-serif;color:#1F2A24}
+a{color:#3F6B4E}a:hover{color:#A9572A}
+button{font-family:inherit}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 8px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 15px/1.2 'IBM Plex Sans Thai',sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 13px/1.3 'IBM Plex Sans Thai',sans-serif;color:rgba(0,0,0,.6)}
+.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+.dv-next{margin:28px 0 0;font:13px/1.5 'IBM Plex Sans Thai',sans-serif;color:rgba(0,0,0,.55)}
+</style>
+</helmet>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Nong Spore AI — แดชบอร์ดจอ 7 นิ้ว (1024×600) บนกล่องควบคุม</span></div>
+<p style="margin:0 0 28px;max-width:900px;font-size:13px;line-height:1.6;color:rgba(0,0,0,.6);text-wrap:pretty">สมมติฐานจากรูปฮาร์ดแวร์: ESP32 + รีเลย์ 2 ช่อง (CH1 หัวพ่นหมอก, CH2 พัดลม) + เซนเซอร์อุณหภูมิ/ความชื้น + จอ LCD 16×2 (I2C) + step-down — จึงตัดสวิตช์ "ไฟโรงเรือน" ออก ส่วน CO₂ ยังคงไว้ตามภาพคอนเซปต์ (ยังไม่เห็นเซนเซอร์ในรูป). สวิตช์ ปุ่ม และชั้นวางกดได้จริง · ลองเปลี่ยน Tweaks → scenario เป็น lowHumidity เพื่อดูสถานะแจ้งเตือน</p>
+
+<div style="font:600 12px 'IBM Plex Mono',monospace;letter-spacing:.08em;color:rgba(0,0,0,.45);margin:0 0 14px">หน้าแรก — 3 ทิศทาง</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>แท็บเล็ตสว่าง — ใกล้เคียงคอนเซปต์เดิม อ่านง่ายที่สุด</div>
+<div style="background:#141715;padding:16px;border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.25)">
+<div style="width:1024px;height:600px;border-radius:10px;overflow:hidden;display:flex;background:#F4F1EA;color:#1F2A24">
+  <div style="width:84px;flex:none;background:#1F2A24;display:flex;flex-direction:column;align-items:center;padding:18px 0;gap:8px">
+    <div style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:12px"><div style="width:34px;height:17px;background:#C9713C;border-radius:17px 17px 5px 5px"></div><div style="width:13px;height:13px;background:#F4F1EA;border-radius:0 0 6px 6px"></div></div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;background:#33433A;color:#F4F1EA;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">home</span>หน้าแรก</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">monitoring</span>ย้อนหลัง</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">auto_awesome</span>พยากรณ์ AI</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">tune</span>ตั้งค่า</div>
+  </div>
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;padding:22px 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:13px;color:#66706A">โรงเรือน A · เห็ด{{ crop }} · 12 ก้อน</div><div style="font-size:24px;font-weight:600;line-height:1.3">สวัสดีตอนเช้า</div></div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#66706A">20 พ.ย. 2569 · 10:30</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:{{ statusBg }};color:{{ statusFg }};font-size:13px;font-weight:500"><span style="width:8px;height:8px;border-radius:50%;background:{{ statusFg }}"></span>{{ statusText }}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px">
+      <div style="background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#66706A"><span style="font-family:'Material Symbols Rounded';font-size:20px;color:#A9572A">device_thermostat</span>อุณหภูมิ<span style="margin-left:auto;font-size:12px">เป้า 25–30°C</span></div>
+        <div style="display:flex;align-items:baseline;gap:4px"><span style="font-family:'IBM Plex Mono',monospace;font-size:42px;font-weight:500;letter-spacing:-1.5px;line-height:1">{{ temp }}</span><span style="font-size:16px;color:#66706A">°C</span></div>
+        <div style="position:relative;height:6px;border-radius:3px;background:#EEEAE1"><div style="position:absolute;left:40%;width:20%;top:0;bottom:0;background:#F0D9C8;border-radius:3px"></div><div style="position:absolute;left:{{ tempPos }};top:-4px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#A9572A;border:2px solid #fff;box-sizing:border-box"></div></div>
+      </div>
+      <div style="background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#66706A"><span style="font-family:'Material Symbols Rounded';font-size:20px;color:#2F7D94">water_drop</span>ความชื้น<span style="margin-left:auto;font-size:12px">เป้า {{ humLo }}–{{ humHi }}%</span></div>
+        <div style="display:flex;align-items:baseline;gap:4px"><span style="font-family:'IBM Plex Mono',monospace;font-size:42px;font-weight:500;letter-spacing:-1.5px;line-height:1">{{ hum }}</span><span style="font-size:16px;color:#66706A">%RH</span></div>
+        <div style="position:relative;height:6px;border-radius:3px;background:#EEEAE1"><div style="position:absolute;left:{{ bandLeft }};width:{{ bandWidth }};top:0;bottom:0;background:#CFE4EA;border-radius:3px"></div><div style="position:absolute;left:{{ humPos }};top:-4px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#2F7D94;border:2px solid #fff;box-sizing:border-box"></div></div>
+      </div>
+      <div style="background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#66706A"><span style="font-family:'Material Symbols Rounded';font-size:20px;color:#3F6B4E">airwave</span>CO₂<span style="margin-left:auto;font-size:12px">ไม่เกิน 1,000 ppm</span></div>
+        <div style="display:flex;align-items:baseline;gap:4px"><span style="font-family:'IBM Plex Mono',monospace;font-size:42px;font-weight:500;letter-spacing:-1.5px;line-height:1">{{ co2 }}</span><span style="font-size:16px;color:#66706A">ppm</span></div>
+        <div style="position:relative;height:6px;border-radius:3px;background:#EEEAE1"><div style="position:absolute;left:0;width:50%;top:0;bottom:0;background:#D6E5D9;border-radius:3px"></div><div style="position:absolute;left:{{ co2Pos }};top:-4px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#3F6B4E;border:2px solid #fff;box-sizing:border-box"></div></div>
+      </div>
+    </div>
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px">
+      <div style="background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-height:0">
+        <div style="display:flex;align-items:center;gap:16px"><div style="font-size:15px;font-weight:600">แนวโน้ม 24 ชั่วโมง</div><div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#66706A;margin-left:auto"><span style="width:14px;height:3px;border-radius:2px;background:#A9572A"></span>อุณหภูมิ</div><div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#66706A"><span style="width:14px;height:3px;border-radius:2px;background:#2F7D94"></span>ความชื้น</div><div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#66706A"><span style="width:12px;height:10px;background:#E0EFF3"></span>ช่วงเป้าหมาย</div></div>
+        <svg viewBox="0 0 600 200" preserveAspectRatio="none" style="width:100%;flex:1;min-height:0;overflow:visible">
+          <rect x="0" y="{{ bandY }}" width="600" height="{{ bandH }}" style="fill:#E0EFF3"></rect>
+          <line x1="0" y1="50" x2="600" y2="50" style="stroke:#EFEBE3;stroke-width:1;vector-effect:non-scaling-stroke"></line>
+          <line x1="0" y1="100" x2="600" y2="100" style="stroke:#EFEBE3;stroke-width:1;vector-effect:non-scaling-stroke"></line>
+          <line x1="0" y1="150" x2="600" y2="150" style="stroke:#EFEBE3;stroke-width:1;vector-effect:non-scaling-stroke"></line>
+          <polygon points="{{ humArea }}" style="fill:#2F7D94;opacity:.08"></polygon>
+          <polyline points="{{ humPts }}" style="fill:none;stroke:#2F7D94;stroke-width:2.5;vector-effect:non-scaling-stroke;stroke-linejoin:round"></polyline>
+          <polyline points="{{ tempPts }}" style="fill:none;stroke:#A9572A;stroke-width:2.5;vector-effect:non-scaling-stroke;stroke-linejoin:round"></polyline>
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A928C"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>ตอนนี้</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;min-height:0">
+        <div style="background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:15px;font-weight:600">อุปกรณ์</div>
+            <div style="display:flex;gap:2px;padding:3px;background:#F1EDE5;border-radius:10px"><button onClick="{{ setAuto }}" style="border:0;cursor:pointer;padding:5px 10px;border-radius:8px;font-size:12px;background:{{ autoBg }};color:{{ autoFg }}">อัตโนมัติ</button><button onClick="{{ setManual }}" style="border:0;cursor:pointer;padding:5px 10px;border-radius:8px;font-size:12px;background:{{ manualBg }};color:{{ manualFg }}">ควบคุมเอง</button></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:12px;background:#E0EFF3;color:#2F7D94;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:22px">humidity_high</div><div style="flex:1"><div style="font-size:14px;font-weight:500">หัวพ่นหมอก</div><div style="font-size:12px;color:#66706A">{{ mistLabel }}</div></div><button onClick="{{ toggleMist }}" style="position:relative;width:48px;height:28px;border:0;border-radius:14px;cursor:pointer;background:{{ mistTrack }}"><span style="position:absolute;left:4px;top:4px;width:20px;height:20px;border-radius:50%;background:#fff;transform:{{ mistKnob }};transition:transform .2s"></span></button></div>
+          <div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:12px;background:#E3ECE4;color:#3F6B4E;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:22px">mode_fan</div><div style="flex:1"><div style="font-size:14px;font-weight:500">พัดลมระบายอากาศ</div><div style="font-size:12px;color:#66706A">{{ fanLabel }}</div></div><button onClick="{{ toggleFan }}" style="position:relative;width:48px;height:28px;border:0;border-radius:14px;cursor:pointer;background:{{ fanTrack }}"><span style="position:absolute;left:4px;top:4px;width:20px;height:20px;border-radius:50%;background:#fff;transform:{{ fanKnob }};transition:transform .2s"></span></button></div>
+        </div>
+        <div style="flex:1;min-height:0;background:#1F2A24;color:#F4F1EA;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#E3B08A"><span style="font-family:'Material Symbols Rounded';font-size:18px">auto_awesome</span>น้องสปอร์แนะนำ</div>
+          <div style="font-size:13.5px;line-height:1.55;text-wrap:pretty">{{ aiTip }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>แผงหน้าปัดโหมดมืด — เกจใหญ่ อ่านได้จากระยะ 2 เมตร + ไทม์ไลน์รีเลย์</div>
+<div style="background:#141715;padding:16px;border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.25)">
+<div style="width:1024px;height:600px;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;background:#0E1210;color:#E6ECE7">
+  <div style="height:64px;flex:none;display:flex;align-items:center;gap:14px;padding:0 28px;border-bottom:1px solid #1F2622">
+    <div style="display:flex;flex-direction:column;align-items:center"><div style="width:28px;height:14px;background:#D9844A;border-radius:14px 14px 4px 4px"></div><div style="width:11px;height:10px;background:#E6ECE7;border-radius:0 0 5px 5px"></div></div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;letter-spacing:.14em">NONG SPORE AI</div>
+    <div style="font-size:13px;color:#8C988F">โรงเรือน A · เห็ด{{ crop }}</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8C988F"><span style="font-family:'Material Symbols Rounded';font-size:18px">wifi</span>-58 dBm</div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;border:1px solid {{ statusDarkFg }};color:{{ statusDarkFg }};font-size:13px"><span style="width:7px;height:7px;border-radius:50%;background:{{ statusDarkFg }}"></span>{{ statusText }}</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500">10:30</div>
+  </div>
+  <div style="flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding:20px 28px 16px">
+    <div style="background:#151A17;border:1px solid #222A25;border-radius:20px;display:flex;flex-direction:column;align-items:center;padding:16px 16px 14px">
+      <div style="align-self:stretch;display:flex;justify-content:space-between;font-size:14px;color:#8C988F"><span>อุณหภูมิ</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px">25–30°C</span></div>
+      <div style="position:relative;width:190px;height:190px">
+        <svg viewBox="0 0 120 120" style="width:190px;height:190px"><circle cx="60" cy="60" r="52" transform="rotate(135 60 60)" style="fill:none;stroke:#232B26;stroke-width:8;stroke-linecap:round;stroke-dasharray:245 400"></circle><circle cx="60" cy="60" r="52" transform="rotate(135 60 60)" style="fill:none;stroke:#E9A23B;stroke-width:8;stroke-linecap:round;stroke-dasharray:{{ tempDash }};transition:stroke-dasharray .6s"></circle></svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-family:'IBM Plex Mono',monospace;font-size:46px;font-weight:500;letter-spacing:-2px;line-height:1">{{ temp }}</div><div style="font-size:14px;color:#8C988F;margin-top:4px">°C</div></div>
+      </div>
+      <div style="display:flex;gap:18px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8C988F"><span>ต่ำ {{ tMin }}</span><span>สูง {{ tMax }}</span></div>
+    </div>
+    <div style="background:#151A17;border:1px solid #222A25;border-radius:20px;display:flex;flex-direction:column;align-items:center;padding:16px 16px 14px">
+      <div style="align-self:stretch;display:flex;justify-content:space-between;font-size:14px;color:#8C988F"><span>ความชื้นสัมพัทธ์</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px">{{ humLo }}–{{ humHi }}%</span></div>
+      <div style="position:relative;width:190px;height:190px">
+        <svg viewBox="0 0 120 120" style="width:190px;height:190px"><circle cx="60" cy="60" r="52" transform="rotate(135 60 60)" style="fill:none;stroke:#232B26;stroke-width:8;stroke-linecap:round;stroke-dasharray:245 400"></circle><circle cx="60" cy="60" r="52" transform="rotate(135 60 60)" style="fill:none;stroke:#5CC8D6;stroke-width:8;stroke-linecap:round;stroke-dasharray:{{ humDash }};transition:stroke-dasharray .6s"></circle></svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-family:'IBM Plex Mono',monospace;font-size:46px;font-weight:500;letter-spacing:-2px;line-height:1">{{ hum }}</div><div style="font-size:14px;color:#8C988F;margin-top:4px">%RH</div></div>
+      </div>
+      <div style="display:flex;gap:18px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8C988F"><span>ต่ำ {{ hMin }}</span><span>สูง {{ hMax }}</span></div>
+    </div>
+    <div style="background:#151A17;border:1px solid #222A25;border-radius:20px;display:flex;flex-direction:column;align-items:center;padding:16px 16px 14px">
+      <div style="align-self:stretch;display:flex;justify-content:space-between;font-size:14px;color:#8C988F"><span>CO₂</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px">&lt;1000 ppm</span></div>
+      <div style="position:relative;width:190px;height:190px">
+        <svg viewBox="0 0 120 120" style="width:190px;height:190px"><circle cx="60" cy="60" r="52" transform="rotate(135 60 60)" style="fill:none;stroke:#232B26;stroke-width:8;stroke-linecap:round;stroke-dasharray:245 400"></circle><circle cx="60" cy="60" r="52" transform="rotate(135 60 60)" style="fill:none;stroke:#A7D46F;stroke-width:8;stroke-linecap:round;stroke-dasharray:{{ co2Dash }};transition:stroke-dasharray .6s"></circle></svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-family:'IBM Plex Mono',monospace;font-size:46px;font-weight:500;letter-spacing:-2px;line-height:1">{{ co2 }}</div><div style="font-size:14px;color:#8C988F;margin-top:4px">ppm</div></div>
+      </div>
+      <div style="display:flex;gap:18px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8C988F"><span>อากาศถ่ายเท</span><span>ปกติ</span></div>
+    </div>
+  </div>
+  <div style="flex:none;margin:0 28px 20px;background:#151A17;border:1px solid #222A25;border-radius:20px;padding:14px 20px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:grid;grid-template-columns:190px minmax(0,1fr) 60px;align-items:center;gap:16px">
+      <div style="display:flex;flex-direction:column"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#5E6A62">RELAY CH1</span><span style="font-size:15px">หัวพ่นหมอก · <span style="color:{{ mistDarkFg }}">{{ mistShort }}</span></span></div>
+      <div style="position:relative;height:22px;background:#1C2320;border-radius:6px;overflow:hidden"><sc-for list="{{ mistBlocks }}" as="b" hint-placeholder-count="10"><div style="position:absolute;top:3px;bottom:3px;left:{{ b.left }};width:{{ b.width }};background:#5CC8D6;border-radius:2px"></div></sc-for></div>
+      <button onClick="{{ toggleMist }}" style="position:relative;width:52px;height:30px;border:0;border-radius:15px;cursor:pointer;background:{{ mistTrackDark }}"><span style="position:absolute;left:4px;top:4px;width:22px;height:22px;border-radius:50%;background:#E6ECE7;transform:{{ mistKnob }};transition:transform .2s"></span></button>
+    </div>
+    <div style="display:grid;grid-template-columns:190px minmax(0,1fr) 60px;align-items:center;gap:16px">
+      <div style="display:flex;flex-direction:column"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#5E6A62">RELAY CH2</span><span style="font-size:15px">พัดลม · <span style="color:{{ fanDarkFg }}">{{ fanShort }}</span></span></div>
+      <div style="position:relative;height:22px;background:#1C2320;border-radius:6px;overflow:hidden"><sc-for list="{{ fanBlocks }}" as="b" hint-placeholder-count="6"><div style="position:absolute;top:3px;bottom:3px;left:{{ b.left }};width:{{ b.width }};background:#A7D46F;border-radius:2px"></div></sc-for></div>
+      <button onClick="{{ toggleFan }}" style="position:relative;width:52px;height:30px;border:0;border-radius:15px;cursor:pointer;background:{{ fanTrackDark }}"><span style="position:absolute;left:4px;top:4px;width:22px;height:22px;border-radius:50%;background:#E6ECE7;transform:{{ fanKnob }};transition:transform .2s"></span></button>
+    </div>
+    <div style="display:grid;grid-template-columns:190px minmax(0,1fr) 60px;gap:16px"><span style="font-size:12px;color:#5E6A62">โหมด: {{ modeText }}</span><div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#5E6A62"><span>00</span><span>06</span><span>12</span><span>18</span><span>ตอนนี้</span></div><span></span></div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>ภาพตัดโรงเรือน — แตะชั้นวางเพื่อดูการเติบโต (ลองแตะดู)</div>
+<div style="background:#141715;padding:16px;border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.25)">
+<div style="width:1024px;height:600px;border-radius:10px;overflow:hidden;display:flex;background:#E9E5DC;color:#1F2A24">
+  <div style="position:relative;width:600px;flex:none">
+    <div style="position:absolute;left:44px;top:28px;width:380px;height:540px;border-radius:12px 12px 4px 4px;border:3px solid #2E3432;background:#1D2120 repeating-linear-gradient(45deg,rgba(255,255,255,.035) 0 2px,transparent 2px 7px);overflow:hidden">
+      <div style="position:absolute;left:0;right:0;top:14px;height:4px;background:#59615D"></div>
+      <div style="position:absolute;left:50%;top:18px;width:14px;height:16px;margin-left:-7px;background:#9AA39F;border-radius:0 0 4px 4px"></div>
+      <sc-if value="{{ mistOn }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:50%;top:34px;width:260px;height:96px;margin-left:-130px;background:linear-gradient(rgba(214,236,242,.55),rgba(214,236,242,0));clip-path:polygon(47% 0,53% 0,100% 100%,0 100%)"></div></sc-if>
+      <div style="position:absolute;right:8px;top:150px;width:22px;height:48px;border-radius:5px;background:#F2F2EE;box-shadow:0 0 0 2px #2E3432"></div>
+      <sc-for list="{{ shelves }}" as="sh" hint-placeholder-count="3">
+        <div onClick="{{ sh.onClick }}" style="position:absolute;left:12px;right:38px;top:{{ sh.top }};height:112px;border-radius:10px;cursor:pointer;background:{{ sh.bg }};box-shadow:{{ sh.ring }};display:flex;flex-direction:column;justify-content:flex-end">
+          <div style="display:flex;justify-content:center;align-items:flex-end;gap:10px;padding:0 10px">
+            <sc-for list="{{ sh.bags }}" as="bag" hint-placeholder-count="4">
+              <div style="position:relative;width:62px;height:70px;border-radius:14px 14px 8px 8px;background:{{ sh.bagBg }}">
+                <div style="position:absolute;left:0;right:0;top:-9px;display:flex;justify-content:center;gap:1px"><sc-for list="{{ bag.caps }}" as="c" hint-placeholder-count="0"><div style="width:20px;height:11px;border-radius:11px 11px 3px 3px;background:#EFE6D5;border:1px solid #C9B996"></div></sc-for></div>
+                <div style="position:absolute;left:24px;top:-4px;width:14px;height:8px;border-radius:2px;background:rgba(0,0,0,.18)"></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="height:5px;margin-top:2px;background:#8D9692;border-radius:2px"></div>
+        </div>
+      </sc-for>
+      <div style="position:absolute;left:50%;bottom:10px;width:64px;height:64px;margin-left:-32px;border-radius:8px;background:#121514;border:2px solid #3A413E;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:40px;color:{{ fanIconColor }}">mode_fan</div>
+    </div>
+    <div style="position:absolute;left:330px;top:48px;width:118px;height:1px;background:#8A928C"></div>
+    <div style="position:absolute;left:448px;top:30px;width:136px;padding:8px 10px;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08)"><div style="font-size:12px;color:#66706A">หัวพ่นหมอก</div><div style="font-size:14px;font-weight:600;color:#2F7D94">{{ mistShort }}</div></div>
+    <div style="position:absolute;left:420px;top:202px;width:28px;height:1px;background:#8A928C"></div>
+    <div style="position:absolute;left:448px;top:170px;width:136px;padding:8px 10px;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08)"><div style="font-size:12px;color:#66706A">เซนเซอร์</div><div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500">{{ temp }}°C · {{ hum }}%</div></div>
+    <div style="position:absolute;left:268px;top:530px;width:180px;height:1px;background:#8A928C"></div>
+    <div style="position:absolute;left:448px;top:504px;width:136px;padding:8px 10px;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08)"><div style="font-size:12px;color:#66706A">พัดลม</div><div style="font-size:14px;font-weight:600;color:#3F6B4E">{{ fanShort }}</div></div>
+  </div>
+  <div style="flex:1;min-width:0;background:#F7F5F0;border-left:1px solid #DDD8CD;padding:24px 24px 20px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:12px;color:#66706A">Nong Spore AI</div><div style="font-size:20px;font-weight:600">โรงเรือน A</div></div><div style="display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:{{ statusBg }};color:{{ statusFg }};font-size:12px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:{{ statusFg }}"></span>{{ statusText }}</div></div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid #E4DFD4;border-radius:14px;background:#fff">
+      <div style="padding:10px 12px;border-right:1px solid #EEEAE1"><div style="font-size:11px;color:#66706A">อุณหภูมิ</div><div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500">{{ temp }}°</div></div>
+      <div style="padding:10px 12px;border-right:1px solid #EEEAE1"><div style="font-size:11px;color:#66706A">ความชื้น</div><div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500">{{ hum }}%</div></div>
+      <div style="padding:10px 12px"><div style="font-size:11px;color:#66706A">CO₂</div><div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500">{{ co2 }}</div></div>
+    </div>
+    <div style="background:#fff;border:1px solid #E4DFD4;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between"><div style="font-size:18px;font-weight:600">{{ sel.name }}</div><div style="font-size:12px;color:#66706A">4 ก้อน</div></div>
+      <div style="display:flex;align-items:center;gap:8px"><span style="padding:4px 10px;border-radius:999px;background:#F5E6DA;color:#8A4520;font-size:12px;font-weight:500">{{ sel.stage }}</span><span style="font-size:13px;color:#66706A">เก็บเกี่ยว{{ sel.eta }}</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:12px;color:#66706A"><span>ความพร้อมเก็บเกี่ยว</span><span style="font-family:'IBM Plex Mono',monospace">{{ sel.pct }}%</span></div><div style="height:8px;border-radius:4px;background:#EEEAE1;overflow:hidden"><div style="height:100%;width:{{ sel.pctW }};background:#C9713C;border-radius:4px;transition:width .4s"></div></div></div>
+      <div style="font-size:13px;color:#66706A">คาดว่าเก็บได้ {{ sel.date }}</div>
+    </div>
+    <div style="flex:1;min-height:0;background:#1F2A24;color:#F4F1EA;border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#E3B08A"><span style="font-family:'Material Symbols Rounded';font-size:18px">auto_awesome</span>น้องสปอร์แนะนำ</div>
+      <div style="font-size:13.5px;line-height:1.55;text-wrap:pretty">{{ aiTip }}</div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+
+<div style="font:600 12px 'IBM Plex Mono',monospace;letter-spacing:.08em;color:rgba(0,0,0,.45);margin:44px 0 14px">หน้าอื่น ๆ — ต่อยอดจาก <a class="dv-oid" href="#1a">1a</a></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1d">
+<div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>ข้อมูลย้อนหลัง — สลับ 24 ชม. / 7 วัน + บันทึกการทำงาน</div>
+<div style="background:#141715;padding:16px;border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.25)">
+<div style="width:1024px;height:600px;border-radius:10px;overflow:hidden;display:flex;background:#F4F1EA;color:#1F2A24">
+  <div style="width:84px;flex:none;background:#1F2A24;display:flex;flex-direction:column;align-items:center;padding:18px 0;gap:8px">
+    <div style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:12px"><div style="width:34px;height:17px;background:#C9713C;border-radius:17px 17px 5px 5px"></div><div style="width:13px;height:13px;background:#F4F1EA;border-radius:0 0 6px 6px"></div></div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">home</span>หน้าแรก</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;background:#33433A;color:#F4F1EA;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">monitoring</span>ย้อนหลัง</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">auto_awesome</span>พยากรณ์ AI</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">tune</span>ตั้งค่า</div>
+  </div>
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;padding:22px 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:13px;color:#66706A">โรงเรือน A</div><div style="font-size:24px;font-weight:600;line-height:1.3">ข้อมูลย้อนหลัง</div></div>
+      <div style="display:flex;gap:2px;padding:3px;background:#E9E4DA;border-radius:12px"><button onClick="{{ set24 }}" style="border:0;cursor:pointer;padding:8px 16px;border-radius:9px;font-size:13px;background:{{ r24Bg }};color:{{ r24Fg }}">24 ชั่วโมง</button><button onClick="{{ set7d }}" style="border:0;cursor:pointer;padding:8px 16px;border-radius:9px;font-size:13px;background:{{ r7Bg }};color:{{ r7Fg }}">7 วัน</button></div>
+    </div>
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:14px">
+      <div style="display:flex;flex-direction:column;gap:14px;min-height:0">
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+          <div style="background:#fff;border:1px solid #E4DFD4;border-radius:14px;padding:12px 14px"><div style="font-size:12px;color:#66706A">อุณหภูมิเฉลี่ย</div><div style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:500;color:#A9572A">{{ hs.tAvg }}°</div></div>
+          <div style="background:#fff;border:1px solid #E4DFD4;border-radius:14px;padding:12px 14px"><div style="font-size:12px;color:#66706A">สูงสุด / ต่ำสุด</div><div style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:500">{{ hs.tMax }}<span style="font-size:15px;color:#8A928C"> / {{ hs.tMin }}</span></div></div>
+          <div style="background:#fff;border:1px solid #E4DFD4;border-radius:14px;padding:12px 14px"><div style="font-size:12px;color:#66706A">ความชื้นเฉลี่ย</div><div style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:500;color:#2F7D94">{{ hs.hAvg }}%</div></div>
+          <div style="background:#fff;border:1px solid #E4DFD4;border-radius:14px;padding:12px 14px"><div style="font-size:12px;color:#66706A">อยู่ในเกณฑ์</div><div style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:500;color:#3F6B4E">{{ hs.inRange }}%</div></div>
+        </div>
+        <div style="flex:1;min-height:0;background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:16px"><div style="font-size:15px;font-weight:600">อุณหภูมิและความชื้น</div><div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#66706A;margin-left:auto"><span style="width:14px;height:3px;border-radius:2px;background:#A9572A"></span>°C</div><div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#66706A"><span style="width:14px;height:3px;border-radius:2px;background:#2F7D94"></span>%RH</div></div>
+          <svg viewBox="0 0 600 200" preserveAspectRatio="none" style="width:100%;flex:1;min-height:0;overflow:visible">
+            <rect x="0" y="{{ bandY }}" width="600" height="{{ bandH }}" style="fill:#E0EFF3"></rect>
+            <line x1="0" y1="50" x2="600" y2="50" style="stroke:#EFEBE3;stroke-width:1;vector-effect:non-scaling-stroke"></line>
+            <line x1="0" y1="100" x2="600" y2="100" style="stroke:#EFEBE3;stroke-width:1;vector-effect:non-scaling-stroke"></line>
+            <line x1="0" y1="150" x2="600" y2="150" style="stroke:#EFEBE3;stroke-width:1;vector-effect:non-scaling-stroke"></line>
+            <polyline points="{{ histHum }}" style="fill:none;stroke:#2F7D94;stroke-width:2.5;vector-effect:non-scaling-stroke;stroke-linejoin:round"></polyline>
+            <polyline points="{{ histTemp }}" style="fill:none;stroke:#A9572A;stroke-width:2.5;vector-effect:non-scaling-stroke;stroke-linejoin:round"></polyline>
+          </svg>
+          <div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A928C"><sc-for list="{{ xLabels }}" as="x" hint-placeholder-count="5"><span>{{ x }}</span></sc-for></div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:16px 16px 8px;display:flex;flex-direction:column;gap:4px;min-height:0;overflow:hidden">
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">บันทึกการทำงาน</div>
+        <sc-for list="{{ events }}" as="ev" hint-placeholder-count="5">
+          <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #F0ECE4">
+            <div style="width:32px;height:32px;flex:none;border-radius:10px;background:#F4F1EA;color:{{ ev.color }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:18px">{{ ev.icon }}</div>
+            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500">{{ ev.text }}</div><div style="font-size:11.5px;color:#66706A">{{ ev.sub }}</div></div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A928C">{{ ev.time }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1e">
+<div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>พยากรณ์ AI — วันเก็บเกี่ยวรายชั้น, ความชื้นล่วงหน้า 6 ชม., คำแนะนำกดใช้ได้</div>
+<div style="background:#141715;padding:16px;border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.25)">
+<div style="width:1024px;height:600px;border-radius:10px;overflow:hidden;display:flex;background:#F4F1EA;color:#1F2A24">
+  <div style="width:84px;flex:none;background:#1F2A24;display:flex;flex-direction:column;align-items:center;padding:18px 0;gap:8px">
+    <div style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:12px"><div style="width:34px;height:17px;background:#C9713C;border-radius:17px 17px 5px 5px"></div><div style="width:13px;height:13px;background:#F4F1EA;border-radius:0 0 6px 6px"></div></div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">home</span>หน้าแรก</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">monitoring</span>ย้อนหลัง</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;background:#33433A;color:#F4F1EA;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">auto_awesome</span>พยากรณ์ AI</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">tune</span>ตั้งค่า</div>
+  </div>
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;padding:22px 24px">
+    <div><div style="font-size:13px;color:#66706A">อัปเดตล่าสุด 10:30 · จากข้อมูลย้อนหลัง 14 วัน</div><div style="font-size:24px;font-weight:600;line-height:1.3">พยากรณ์ AI</div></div>
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:14px">
+      <div style="background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+        <div style="font-size:15px;font-weight:600">คาดการณ์วันเก็บเกี่ยว</div>
+        <sc-for list="{{ shelves }}" as="sh" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;gap:7px;padding-bottom:12px;border-bottom:1px solid #F0ECE4">
+            <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:15px;font-weight:500">{{ sh.name }}</span><span style="font-size:12px;color:#8A4520;background:#F5E6DA;padding:2px 8px;border-radius:999px">{{ sh.stage }}</span><span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:13px">{{ sh.date }}</span></div>
+            <div style="height:8px;border-radius:4px;background:#EEEAE1;overflow:hidden"><div style="height:100%;width:{{ sh.pctW }};background:#C9713C;border-radius:4px"></div></div>
+            <div style="font-size:12px;color:#66706A">{{ sh.eta }} · พร้อม {{ sh.pct }}%</div>
+          </div>
+        </sc-for>
+        <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:{{ riskBg }}"><span style="font-family:'Material Symbols Rounded';font-size:20px;color:{{ riskFg }}">shield</span><div style="font-size:13px"><span style="font-weight:600;color:{{ riskFg }}">ความเสี่ยงราเขียว: {{ riskText }}</span><br><span style="color:#66706A">{{ riskSub }}</span></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;min-height:0">
+        <div style="background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:14px 18px;display:flex;flex-direction:column;gap:8px;height:200px;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:14px"><div style="font-size:15px;font-weight:600">ความชื้น 6 ชั่วโมงข้างหน้า</div><div style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:#66706A"><span style="width:14px;border-top:2px dashed #2F7D94"></span>คาดการณ์</div></div>
+          <div style="position:relative;flex:1;min-height:0">
+            <svg viewBox="0 0 600 200" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">
+              <rect x="0" y="{{ bandY }}" width="600" height="{{ bandH }}" style="fill:#E0EFF3"></rect>
+              <rect x="{{ nowX }}" y="0" width="{{ futW }}" height="200" style="fill:#F4F1EA;opacity:.7"></rect>
+              <polyline points="{{ fPast }}" style="fill:none;stroke:#2F7D94;stroke-width:2.5;vector-effect:non-scaling-stroke;stroke-linejoin:round"></polyline>
+              <polyline points="{{ fFuture }}" style="fill:none;stroke:#2F7D94;stroke-width:2.5;stroke-dasharray:6 5;vector-effect:non-scaling-stroke;stroke-linejoin:round"></polyline>
+            </svg>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A928C"><span>-12 ชม.</span><span>-6 ชม.</span><span style="color:#1F2A24">ตอนนี้</span><span>+6 ชม.</span></div>
+        </div>
+        <div style="flex:1;min-height:0;background:#1F2A24;color:#F4F1EA;border-radius:16px;padding:14px 18px;display:flex;flex-direction:column;gap:2px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#E3B08A;margin-bottom:4px"><span style="font-family:'Material Symbols Rounded';font-size:18px">auto_awesome</span>คำแนะนำจากน้องสปอร์</div>
+          <sc-for list="{{ recs }}" as="r" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #33433A">
+              <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500">{{ r.title }}</div><div style="font-size:12px;color:#AEB8B0">{{ r.sub }}</div></div>
+              <button onClick="{{ r.onApply }}" style="border:0;cursor:pointer;padding:7px 12px;border-radius:9px;font-size:12px;font-weight:500;background:{{ r.btnBg }};color:{{ r.btnFg }};white-space:nowrap">{{ r.btnText }}</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1f">
+<div class="dv-olabel"><a class="dv-oid" href="#1f">1f</a>ตั้งค่า — สายพันธุ์, เกณฑ์ความชื้น/อุณหภูมิ, รอบพ่นหมอก, การเชื่อมต่อ (ปุ่ม +/− ใช้ได้)</div>
+<div style="background:#141715;padding:16px;border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.25)">
+<div style="width:1024px;height:600px;border-radius:10px;overflow:hidden;display:flex;background:#F4F1EA;color:#1F2A24">
+  <div style="width:84px;flex:none;background:#1F2A24;display:flex;flex-direction:column;align-items:center;padding:18px 0;gap:8px">
+    <div style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:12px"><div style="width:34px;height:17px;background:#C9713C;border-radius:17px 17px 5px 5px"></div><div style="width:13px;height:13px;background:#F4F1EA;border-radius:0 0 6px 6px"></div></div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">home</span>หน้าแรก</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">monitoring</span>ย้อนหลัง</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;color:#9BA69E;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">auto_awesome</span>พยากรณ์ AI</div>
+    <div style="width:68px;padding:10px 0;border-radius:12px;background:#33433A;color:#F4F1EA;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px"><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">tune</span>ตั้งค่า</div>
+  </div>
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;padding:22px 24px">
+    <div><div style="font-size:13px;color:#66706A">ค่าจะถูกส่งไปยัง ESP32 ทันที</div><div style="font-size:24px;font-weight:600;line-height:1.3">ตั้งค่าการเพาะ</div></div>
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px">
+      <div style="background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;flex-direction:column;gap:10px"><div style="font-size:14px;font-weight:600">สายพันธุ์เห็ด</div><div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ crops }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.onClick }}" style="border:1px solid #E4DFD4;cursor:pointer;padding:9px 16px;border-radius:999px;font-size:13px;background:{{ c.bg }};color:{{ c.fg }}">เห็ด{{ c.name }}</button></sc-for></div></div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:14px;font-weight:600">ช่วงความชื้นเป้าหมาย</div><div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#2F7D94">ตอนนี้ {{ hum }}%</div></div>
+          <div style="position:relative;height:10px;border-radius:5px;background:#EEEAE1"><div style="position:absolute;left:{{ bandLeft }};width:{{ bandWidth }};top:0;bottom:0;background:#9FCBD6;border-radius:5px"></div><div style="position:absolute;left:{{ humPos }};top:-5px;width:4px;height:20px;margin-left:-2px;border-radius:2px;background:#1F2A24"></div></div>
+          <div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A928C"><span>50%</span><span>75%</span><span>100%</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #E4DFD4;border-radius:12px"><span style="font-size:12px;color:#66706A">ต่ำสุด</span><div style="display:flex;align-items:center;gap:8px"><button onClick="{{ humLoDec }}" style="width:36px;height:36px;border:1px solid #E4DFD4;border-radius:10px;background:#fff;cursor:pointer;font-size:18px">−</button><span style="font-family:'IBM Plex Mono',monospace;font-size:16px;min-width:36px;text-align:center">{{ humLo }}%</span><button onClick="{{ humLoInc }}" style="width:36px;height:36px;border:1px solid #E4DFD4;border-radius:10px;background:#fff;cursor:pointer;font-size:18px">+</button></div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #E4DFD4;border-radius:12px"><span style="font-size:12px;color:#66706A">สูงสุด</span><div style="display:flex;align-items:center;gap:8px"><button onClick="{{ humHiDec }}" style="width:36px;height:36px;border:1px solid #E4DFD4;border-radius:10px;background:#fff;cursor:pointer;font-size:18px">−</button><span style="font-family:'IBM Plex Mono',monospace;font-size:16px;min-width:36px;text-align:center">{{ humHi }}%</span><button onClick="{{ humHiInc }}" style="width:36px;height:36px;border:1px solid #E4DFD4;border-radius:10px;background:#fff;cursor:pointer;font-size:18px">+</button></div></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid #F0ECE4"><div><div style="font-size:14px;font-weight:600">อุณหภูมิสูงสุด</div><div style="font-size:12px;color:#66706A">เกินนี้จะเปิดพัดลมและแจ้งเตือน</div></div><div style="display:flex;align-items:center;gap:8px"><button onClick="{{ tempMaxDec }}" style="width:36px;height:36px;border:1px solid #E4DFD4;border-radius:10px;background:#fff;cursor:pointer;font-size:18px">−</button><span style="font-family:'IBM Plex Mono',monospace;font-size:16px;min-width:44px;text-align:center">{{ tempMax }}°C</span><button onClick="{{ tempMaxInc }}" style="width:36px;height:36px;border:1px solid #E4DFD4;border-radius:10px;background:#fff;cursor:pointer;font-size:18px">+</button></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;min-height:0">
+        <div style="background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:14px;font-weight:600">รอบการทำงานอัตโนมัติ</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Material Symbols Rounded';font-size:20px;color:#2F7D94">humidity_high</span><span style="flex:1;font-size:13px">พ่นหมอกครั้งละ</span><button onClick="{{ mistSecDec }}" style="width:36px;height:36px;border:1px solid #E4DFD4;border-radius:10px;background:#fff;cursor:pointer;font-size:18px">−</button><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;min-width:50px;text-align:center">{{ mistSec }} วิ</span><button onClick="{{ mistSecInc }}" style="width:36px;height:36px;border:1px solid #E4DFD4;border-radius:10px;background:#fff;cursor:pointer;font-size:18px">+</button></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Material Symbols Rounded';font-size:20px;color:#2F7D94">schedule</span><span style="flex:1;font-size:13px">ทุก ๆ</span><button onClick="{{ mistEveryDec }}" style="width:36px;height:36px;border:1px solid #E4DFD4;border-radius:10px;background:#fff;cursor:pointer;font-size:18px">−</button><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;min-width:50px;text-align:center">{{ mistEvery }} นาที</span><button onClick="{{ mistEveryInc }}" style="width:36px;height:36px;border:1px solid #E4DFD4;border-radius:10px;background:#fff;cursor:pointer;font-size:18px">+</button></div>
+          <div style="font-size:12px;color:#66706A;line-height:1.5">พัดลมทำงาน 5 นาทีหลังพ่นหมอกทุกครั้ง เพื่อระบาย CO₂</div>
+        </div>
+        <div style="flex:1;min-height:0;background:#fff;border:1px solid #E4DFD4;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:14px;font-weight:600">การเชื่อมต่อ</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px"><span style="font-family:'Material Symbols Rounded';font-size:20px;color:#3F6B4E">wifi</span><span style="flex:1">NongSpore-Farm</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#66706A">-58 dBm</span></div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px"><span style="font-family:'Material Symbols Rounded';font-size:20px;color:#3F6B4E">memory</span><span style="flex:1">ESP32 · เฟิร์มแวร์ 1.2.0</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#66706A">ออนไลน์ 3 วัน</span></div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px"><span style="font-family:'Material Symbols Rounded';font-size:20px;color:#3F6B4E">notifications</span><span style="flex:1">แจ้งเตือนผ่าน LINE</span><button onClick="{{ toggleLine }}" style="position:relative;width:48px;height:28px;border:0;border-radius:14px;cursor:pointer;background:{{ lineTrack }}"><span style="position:absolute;left:4px;top:4px;width:20px;height:20px;border-radius:50%;background:#fff;transform:{{ lineKnob }};transition:transform .2s"></span></button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1g">
+<div class="dv-olabel"><a class="dv-oid" href="#1g">1g</a>จอ LCD 16×2 บนกล่องควบคุม — ค่าตรงกับแดชบอร์ด</div>
+<div style="width:520px;background:#1F5E36;border-radius:14px;padding:26px;box-shadow:0 20px 50px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:14px">
+  <div style="background:#0C0F0D;border-radius:6px;padding:14px">
+    <div style="background:#9CC63E;border-radius:3px;padding:12px 16px;box-shadow:inset 0 0 18px rgba(0,0,0,.25);font-family:'VT323',monospace;font-size:42px;line-height:1.05;letter-spacing:3px;color:#17240A;white-space:pre">{{ lcd1 }}
+{{ lcd2 }}</div>
+  </div>
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#BFD8C4;letter-spacing:.06em">I2C 0x27 · สลับหน้าทุก 5 วินาที → หน้า 2 แสดง CO₂ / Wi-Fi</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">ลองต่อ: "ใช้ <a class="dv-oid" href="#1a">1a</a> แต่ใส่เกจจาก <a class="dv-oid" href="#1b">1b</a>" · "ทำ <a class="dv-oid" href="#1c">1c</a> ให้เป็นหน้าแรกในโหมดมืด" · "เพิ่มเวอร์ชันมือถือสำหรับดูจากบ้าน"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;scenario&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;normal&quot;,&quot;lowHumidity&quot;],&quot;default&quot;:&quot;normal&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;liveSim&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = { fan: false, mist: true, mode: 'auto', range: '24h', shelf: 0, humLo: 80, humHi: 90, tempMax: 30, mistSec: 10, mistEvery: 15, crop: 'นางฟ้า', lineOn: true, applied: {}, tick: 0 };
+  componentDidMount() { this.t = setInterval(() => { if (this.props.liveSim ?? true) this.setState(s => ({ tick: s.tick + 1 })); }, 2500); }
+  componentWillUnmount() { clearInterval(this.t); }
+  renderVals() {
+    const s = this.state, low = (this.props.scenario ?? 'normal') === 'lowHumidity';
+    const w = k => Math.sin(s.tick * 1.3 + k);
+    const temp = +((low ? 29.2 : 26.8) + w(1) * 0.2).toFixed(1);
+    const hum = Math.round((low ? 72 : 85) + w(2) * 1.2);
+    const co2 = Math.round((low ? 860 : 620) + w(3) * 15);
+    const auto = s.mode === 'auto';
+    const mistOn = auto && low ? true : s.mist;
+    const fanOn = auto && low ? false : s.fan;
+    const clamp = v => Math.max(0, Math.min(100, v));
+    const pos = (v, lo, hi) => clamp((v - lo) / (hi - lo) * 100).toFixed(1) + '%';
+    const W = 600, H = 200;
+    const pts = (a, lo, hi, n = a.length, off = 0) => a.map((v, i) => ((i + off) * W / (n - 1)).toFixed(1) + ',' + (H - (v - lo) / (hi - lo) * H).toFixed(1)).join(' ');
+    const T24 = [], H24 = [];
+    for (let i = 0; i < 24; i++) {
+      const t = 26.3 + 1.5 * Math.sin((i - 9) / 24 * 2 * Math.PI) + (low && i >= 19 ? (i - 18) * 0.5 : 0);
+      let h = 86.5 - (t - 26.3) * 2 + (i % 2 ? 1.2 : -0.6);
+      if (low && i >= 19) h -= (i - 18) * 2.6;
+      T24.push(t); H24.push(h);
+    }
+    T24[23] = temp; H24[23] = hum;
+    const T7 = [], H7 = [];
+    for (let i = 0; i < 28; i++) { const t = 26.4 + 1.4 * Math.sin(i / 4 * 2 * Math.PI) + (i % 5) * 0.1; T7.push(t); H7.push(85.5 - (t - 26.4) * 2 + ((i * 7) % 3 - 1)); }
+    const is24 = s.range === '24h', HT = is24 ? T24 : T7, HH = is24 ? H24 : H7;
+    const avg = a => (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1);
+    const f1 = v => v.toFixed(1);
+    const hs = { tAvg: avg(HT), tMax: f1(Math.max(...HT)), tMin: f1(Math.min(...HT)), hAvg: Math.round(avg(HH)), inRange: Math.round(HH.filter(v => v >= s.humLo && v <= s.humHi).length / HH.length * 100) };
+    const bandY = (H - (s.humHi - 60) / 40 * H).toFixed(1), bandH = ((s.humHi - s.humLo) / 40 * H).toFixed(1);
+    const mistBlocks = [], fanBlocks = [];
+    for (let h = 0.3; h < 24; h += (low && h >= 19 ? 0.6 : 2)) mistBlocks.push({ left: (h / 24 * 100).toFixed(2) + '%', width: '1.3%' });
+    for (let h = 1; h < (low ? 19 : 24); h += 3) fanBlocks.push({ left: (h / 24 * 100).toFixed(2) + '%', width: '3.2%' });
+    const past = H24.slice(12), fut = low ? [hum, 76, 80, 83, 84, 85, 85] : [hum, 84, 83, 82.5, 83.5, 85, 86];
+    const nowX = 11 * W / 17;
+    const SH = [
+      { name: 'ชั้นบน', stage: 'พร้อมเก็บเกี่ยว', eta: 'อีก 1–2 วัน', date: '21–22 พ.ย.', pct: 88, caps: 3, top: '40px' },
+      { name: 'ชั้นกลาง', stage: 'ดอกอ่อน', eta: 'อีก 4 วัน', date: '24 พ.ย.', pct: 60, caps: 2, top: '186px' },
+      { name: 'ชั้นล่าง', stage: 'เดินเส้นใย', eta: 'อีก 11 วัน', date: '1 ธ.ค.', pct: 28, caps: 0, top: '332px' }];
+    const shelves = SH.map((x, i) => ({ ...x, pctW: x.pct + '%',
+      bagBg: x.caps ? 'linear-gradient(#DCC8A6,#C2A982)' : 'linear-gradient(#F0ECE2,#D9D1C0)',
+      bags: [0, 1, 2, 3].map(b => ({ caps: Array.from({ length: Math.max(0, x.caps - (b === 2 ? 1 : 0)) }, (_, k) => ({ k })) })),
+      onClick: () => this.setState({ shelf: i }),
+      ring: s.shelf === i ? '0 0 0 2px #E39A63' : 'none', bg: s.shelf === i ? 'rgba(227,154,99,.12)' : 'transparent' }));
+    const recBase = low
+      ? [{ id: 'a', title: 'เพิ่มรอบพ่นหมอกเป็นทุก 10 นาที', sub: 'ความชื้นต่ำกว่าเกณฑ์ต่อเนื่อง 3 ชม.' }, { id: 'b', title: 'งดเปิดพัดลมชั่วคราว 1 ชม.', sub: 'ลดการสูญเสียความชื้น' }, { id: 'c', title: 'ปิดผ้าสแลนให้มิดชิด', sub: 'อุณหภูมิภายนอกสูง 33°C' }]
+      : [{ id: 'a', title: 'เก็บเกี่ยวชั้นบนพรุ่งนี้เช้า', sub: 'เก็บก่อนขอบหมวกเริ่มม้วนขึ้น' }, { id: 'b', title: 'ลดรอบพ่นหมอกช่วงกลางคืน', sub: 'ความชื้นกลางคืนสูงกว่าเป้า ~3%' }, { id: 'c', title: 'เปิดพัดลมเพิ่ม 5 นาทีหลังพ่น', sub: 'ช่วยลด CO₂ และป้องกันราเขียว' }];
+    const recs = recBase.map(r => { const ap = !!s.applied[r.id]; return { ...r, btnText: ap ? 'ใช้แล้ว ✓' : 'นำไปใช้', btnBg: ap ? '#33433A' : '#E3B08A', btnFg: ap ? '#AEB8B0' : '#1F2A24', onApply: () => this.setState(st => ({ applied: { ...st.applied, [r.id]: !st.applied[r.id] } })) }; });
+    const step = (key, d, min, max) => () => this.setState(st => ({ [key]: Math.max(min, Math.min(max, st[key] + d)) }));
+    const events = [
+      { time: '10:15', icon: 'water_drop', text: 'พ่นหมอก ' + s.mistSec + ' วินาที', sub: 'อัตโนมัติ · ความชื้น 82%', color: '#2F7D94' },
+      { time: '09:30', icon: 'mode_fan', text: 'พัดลมระบายอากาศ 5 นาที', sub: 'ตามรอบเวลา', color: '#3F6B4E' },
+      { time: '08:02', icon: 'notifications', text: 'แจ้งเตือนทาง LINE', sub: 'ชั้นบนใกล้เก็บเกี่ยว', color: '#A9572A' },
+      { time: '06:00', icon: 'water_drop', text: 'พ่นหมอก ' + s.mistSec + ' วินาที', sub: 'ตามรอบเวลา', color: '#2F7D94' },
+      { time: '03:12', icon: 'wifi', text: 'เชื่อมต่อ Wi-Fi ใหม่', sub: 'สัญญาณกลับมาใน 40 วินาที', color: '#66706A' }];
+    if (low) events.unshift({ time: '10:20', icon: 'warning', text: 'ความชื้นต่ำกว่าเกณฑ์', sub: hum + '% · เพิ่มรอบพ่นหมอก', color: '#B7791F' });
+    const knob = on => on ? 'translateX(20px)' : 'translateX(0)';
+    return {
+      temp: temp.toFixed(1), hum, co2, crop: s.crop, humLo: s.humLo, humHi: s.humHi, tempMax: s.tempMax, mistSec: s.mistSec, mistEvery: s.mistEvery,
+      statusText: low ? 'ความชื้นต่ำกว่าเกณฑ์' : 'ระบบทำงานปกติ', statusBg: low ? '#FBEFD8' : '#E3ECE4', statusFg: low ? '#8A5A12' : '#2F5A3E', statusDarkFg: low ? '#F2B35B' : '#A7D46F',
+      tempPos: pos(temp, 15, 40), humPos: pos(hum, 50, 100), co2Pos: pos(co2, 0, 2000),
+      bandLeft: ((s.humLo - 50) * 2) + '%', bandWidth: ((s.humHi - s.humLo) * 2) + '%',
+      mistOn, fanOn,
+      mistLabel: (mistOn ? 'กำลังทำงาน' : 'ปิดอยู่') + (auto ? ' · อัตโนมัติ' : ' · ควบคุมเอง'),
+      fanLabel: (fanOn ? 'กำลังทำงาน' : 'ปิดอยู่') + (auto ? ' · รอบถัดไป 11:00' : ' · ควบคุมเอง'),
+      mistShort: mistOn ? 'ทำงาน' : 'ปิด', fanShort: fanOn ? 'ทำงาน' : 'ปิด',
+      mistDarkFg: mistOn ? '#5CC8D6' : '#8C988F', fanDarkFg: fanOn ? '#A7D46F' : '#8C988F',
+      fanIconColor: fanOn ? '#A7D46F' : '#4A524E',
+      mistTrack: mistOn ? '#2F7D94' : '#D9D4C8', fanTrack: fanOn ? '#3F6B4E' : '#D9D4C8',
+      mistTrackDark: mistOn ? '#2B7A86' : '#2C3530', fanTrackDark: fanOn ? '#5B7F38' : '#2C3530',
+      mistKnob: knob(mistOn), fanKnob: knob(fanOn),
+      toggleMist: () => this.setState({ mode: 'manual', mist: !mistOn, fan: fanOn }),
+      toggleFan: () => this.setState({ mode: 'manual', fan: !fanOn, mist: mistOn }),
+      setAuto: () => this.setState({ mode: 'auto' }), setManual: () => this.setState({ mode: 'manual' }),
+      autoBg: auto ? '#1F2A24' : 'transparent', autoFg: auto ? '#F4F1EA' : '#66706A',
+      manualBg: !auto ? '#1F2A24' : 'transparent', manualFg: !auto ? '#F4F1EA' : '#66706A',
+      modeText: auto ? 'อัตโนมัติ' : 'ควบคุมเอง',
+      tempPts: pts(T24, 20, 34), humPts: pts(H24, 60, 100), humArea: pts(H24, 60, 100) + ' 600,200 0,200', bandY, bandH,
+      aiTip: low ? 'ความชื้นต่ำกว่า ' + s.humLo + '% ต่อเนื่อง 3 ชม. ระบบเพิ่มรอบพ่นหมอกเป็นทุก 10 นาที และงดเปิดพัดลมชั่วคราว ควรปิดผ้าสแลนให้มิดชิด' : 'สภาพอากาศเหมาะสม ชั้นบนพร้อมเก็บเกี่ยวใน 1–2 วัน แนะนำเก็บช่วงเช้าก่อนขอบหมวกม้วนขึ้น',
+      tMin: f1(Math.min(...T24)), tMax: f1(Math.max(...T24)), hMin: Math.round(Math.min(...H24)), hMax: Math.round(Math.max(...H24)),
+      tempDash: (245 * clamp((temp - 15) / 25 * 100) / 100).toFixed(1) + ' 400',
+      humDash: (245 * clamp((hum - 40) / 60 * 100) / 100).toFixed(1) + ' 400',
+      co2Dash: (245 * clamp(co2 / 2000 * 100) / 100).toFixed(1) + ' 400',
+      mistBlocks, fanBlocks,
+      shelves, sel: shelves[s.shelf],
+      set24: () => this.setState({ range: '24h' }), set7d: () => this.setState({ range: '7d' }),
+      r24Bg: is24 ? '#fff' : 'transparent', r24Fg: is24 ? '#1F2A24' : '#66706A', r7Bg: !is24 ? '#fff' : 'transparent', r7Fg: !is24 ? '#1F2A24' : '#66706A',
+      histTemp: pts(HT, 20, 34), histHum: pts(HH, 60, 100), hs,
+      xLabels: is24 ? ['00:00', '06:00', '12:00', '18:00', 'ตอนนี้'] : ['ศ.', 'ส.', 'อา.', 'จ.', 'อ.', 'พ.', 'วันนี้'],
+      events,
+      fPast: pts(past, 60, 100, 18, 0), fFuture: pts(fut, 60, 100, 18, 11), nowX: nowX.toFixed(1), futW: (W - nowX).toFixed(1),
+      recs,
+      riskBg: low ? '#FBEFD8' : '#E3ECE4', riskFg: low ? '#8A5A12' : '#2F5A3E', riskText: low ? 'ปานกลาง' : 'ต่ำ',
+      riskSub: low ? 'อุณหภูมิสูง อากาศถ่ายเทน้อย' : 'อากาศถ่ายเทดี ความชื้นคงที่',
+      crops: ['นางฟ้า', 'นางรม', 'ฮังการี', 'ขอนขาว'].map(c => ({ name: c, bg: c === s.crop ? '#1F2A24' : '#fff', fg: c === s.crop ? '#F4F1EA' : '#1F2A24', onClick: () => this.setState({ crop: c }) })),
+      humLoInc: step('humLo', 1, 60, s.humHi - 2), humLoDec: step('humLo', -1, 60, 98),
+      humHiInc: step('humHi', 1, 0, 98), humHiDec: step('humHi', -1, s.humLo + 2, 100),
+      tempMaxInc: step('tempMax', 1, 20, 36), tempMaxDec: step('tempMax', -1, 20, 36),
+      mistSecInc: step('mistSec', 5, 5, 60), mistSecDec: step('mistSec', -5, 5, 60),
+      mistEveryInc: step('mistEvery', 5, 5, 60), mistEveryDec: step('mistEvery', -5, 5, 60),
+      toggleLine: () => this.setState(st => ({ lineOn: !st.lineOn })), lineTrack: s.lineOn ? '#3F6B4E' : '#D9D4C8', lineKnob: knob(s.lineOn),
+      lcd1: ('T:' + temp.toFixed(1) + 'C  H:' + hum + '%').padEnd(16).slice(0, 16),
+      lcd2: 'MIST:' + (mistOn ? 'ON ' : 'OFF') + ' FAN:' + (fanOn ? 'ON' : 'OFF')
+    };
+  }
+}
+</script>
+</body>
+</html>
