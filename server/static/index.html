@@ -58,6 +58,24 @@ ul.list .i{color:var(--acc);margin-top:2px}ul.list .err .i{color:var(--bad)}
 .alert.ok{background:color-mix(in srgb,var(--ok) 12%,transparent);border-color:var(--ok)}.alert.ok .i{color:var(--ok)}
 table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}th{color:var(--mute);font-weight:500}
 .muted{color:var(--mute);font-size:13px}
+#chatFab{position:fixed;right:20px;bottom:20px;z-index:30;width:58px;height:58px;border-radius:50%;padding:0;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+#chatFab .i{width:26px;height:26px}
+#chatBox{position:fixed;right:20px;bottom:90px;z-index:31;width:370px;max-width:calc(100vw - 32px);height:min(560px,calc(100vh - 120px));display:none;flex-direction:column;
+  background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.28);overflow:hidden}
+#chatBox.open{display:flex}
+@media(max-width:560px){#chatBox{right:0;bottom:0;width:100vw;max-width:100vw;height:100dvh;border-radius:0}#chatBox.open~#chatFab{display:none}}
+.chat-h{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--acc);color:#fff}
+.chat-h b{flex:1;font-size:15px}.chat-h small{display:block;font-weight:400;opacity:.85;font-size:12px}
+.chat-h button{background:transparent;padding:4px;color:#fff}
+.chat-m{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:85%;padding:9px 12px;border-radius:14px;font-size:14px;line-height:1.55;word-wrap:break-word}
+.msg.u{align-self:flex-end;background:var(--acc);color:#fff;border-bottom-right-radius:4px}
+.msg.a{align-self:flex-start;background:var(--acc2);border-bottom-left-radius:4px}
+.msg.e{align-self:center;background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad);font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips button{background:transparent;color:var(--acc);border:1px solid var(--acc);border-radius:99px;padding:4px 10px;font-size:13px;font-weight:400}
+.chat-f{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.chat-f textarea{flex:1;resize:none;font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-height:110px}
+.chat-f button{padding:0 12px}
 </style>
 </head>
 <body>
@@ -87,6 +105,10 @@ table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:ta
   <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
   <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 13h.01M15 13h.01M9 17h6"/></symbol>
   <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol>
 </svg>
 <script>const I=(n,c="")=>`<svg class="i ${c}"><use href="#i-${n}"/></svg>`;</script>
@@ -155,6 +177,16 @@ table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:ta
     </form></section>
 
 </main>
+
+<div id="chatBox" role="dialog" aria-label="ผู้ช่วย AI">
+  <div class="chat-h"><svg class="i lg"><use href="#i-bot"/></svg><b>น้องสปอร์<small>ผู้ช่วย AI เรื่องโรงเรือนเห็ด</small></b>
+    <button id="chatClear" title="เริ่มแชทใหม่" aria-label="เริ่มแชทใหม่"><svg class="i"><use href="#i-trash"/></svg></button>
+    <button id="chatClose" title="ปิด" aria-label="ปิด"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="chat-m" id="chatMsgs"></div>
+  <form class="chat-f" id="chatForm"><textarea id="chatIn" rows="1" maxlength="1000" placeholder="ถามเรื่องโรงเรือน เห็ด หรือการใช้งานระบบ..."></textarea>
+    <button id="chatSend" aria-label="ส่ง"><svg class="i"><use href="#i-send"/></svg></button></form>
+</div>
+<button id="chatFab" title="คุยกับผู้ช่วย AI" aria-label="คุยกับผู้ช่วย AI"><svg class="i"><use href="#i-chat"/></svg></button>
 
 <script>
 const PROFILES={
@@ -364,6 +396,40 @@ document.querySelectorAll("#rangeSeg button").forEach(b=>{b.classList.toggle("on
   document.querySelectorAll("#rangeSeg button").forEach(x=>x.classList.toggle("on",x===b));loadHistory()}});
 $("btnTheme").onclick=()=>{const cur=document.documentElement.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
   const n=cur==="dark"?"light":"dark";document.documentElement.dataset.theme=n;store.set("ns_theme",n);if(chart){chart.destroy();chart=null}renderChart()};
+
+/* ---------- ผู้ช่วย AI ---------- */
+const ss={get(k){try{return sessionStorage.getItem(k)}catch{return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch{}}};
+let CHAT=[];try{CHAT=JSON.parse(ss.get("ns_chat")||"[]")}catch{CHAT=[]}
+const SUGGEST=["ตอนนี้สภาพโรงเรือนเป็นอย่างไร","ความชื้นต่ำควรทำอย่างไร","จอขึ้น NOSRV แก้ยังไง"];
+const fmtMsg=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>");
+function chatRender(busy=false){
+  const box=$("chatMsgs");
+  let html=`<div class="msg a">สวัสดีครับ ผมน้องสปอร์ ถามเรื่องโรงเรือน การเพาะเห็ด หรือการใช้งานระบบได้เลยครับ</div>`;
+  html+=CHAT.map(m=>`<div class="msg ${m.role==="user"?"u":m.role==="error"?"e":"a"}">${fmtMsg(m.content)}</div>`).join("");
+  if(!CHAT.length)html+=`<div class="chips">${SUGGEST.map(q=>`<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>`;
+  if(busy)html+=`<div class="msg a muted">กำลังพิมพ์...</div>`;
+  box.innerHTML=html;box.scrollTop=box.scrollHeight;
+}
+function chatContext(){
+  const p=PROFILES[$("species").value],s=S||{};
+  return{demo,online:s.online,sensorOk:s.sensorOk,temp:s.temp,hum:s.hum,fan:s.fan,auto:s.auto,tempOn:s.tempOn,tempOff:s.tempOff,
+    species:p.n,fanOnSec:s.fanOnSec,score:score(s.temp,s.hum,p),rangeHours:rangeH,summary:H.summary,
+    alerts:[...document.querySelectorAll("#alerts .alert span")].map(e=>e.textContent)};
+}
+async function chatSend(text){
+  text=text.trim();if(!text||$("chatSend").disabled)return;
+  CHAT.push({role:"user",content:text});$("chatIn").value="";$("chatSend").disabled=true;chatRender(true);
+  try{const r=await api("/api/chat",{method:"POST",body:JSON.stringify({messages:CHAT.filter(m=>m.role!=="error").slice(-10),context:chatContext()})});
+    CHAT.push({role:"assistant",content:r.reply})}
+  catch(e){CHAT.push({role:"error",content:e.message})}
+  CHAT=CHAT.slice(-30);ss.set("ns_chat",JSON.stringify(CHAT));$("chatSend").disabled=false;chatRender();$("chatIn").focus();
+}
+$("chatFab").onclick=()=>{const o=$("chatBox").classList.toggle("open");if(o){chatRender();$("chatIn").focus()}};
+$("chatClose").onclick=()=>$("chatBox").classList.remove("open");
+$("chatClear").onclick=()=>{CHAT=[];ss.set("ns_chat","[]");chatRender()};
+$("chatForm").onsubmit=e=>{e.preventDefault();chatSend($("chatIn").value)};
+$("chatIn").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();chatSend($("chatIn").value)}};
+$("chatMsgs").onclick=e=>{const b=e.target.closest("button[data-q]");if(b)chatSend(b.dataset.q)};
 
 const th=store.get("ns_theme",null);if(th)document.documentElement.dataset.theme=th;
 api("/api/me").then(m=>$("meName").textContent=m.username).catch(()=>{});
