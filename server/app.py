@@ -25,11 +25,16 @@ DB = dict(
     user=os.environ.get("DB_USER", "mushroom"),
     password=os.environ.get("DB_PASS", ""),
     database=os.environ.get("DB_NAME", "mushroom_house"),
+    port=int(os.environ.get("DB_PORT", "3306")),
     unix_socket=os.environ.get("DB_SOCKET") or None,
+    init_command="SET time_zone='%s'" % os.environ.get("DB_TZ", "+07:00"),
+    connect_timeout=10,
     charset="utf8mb4",
     autocommit=True,
     cursorclass=pymysql.cursors.DictCursor,
 )
+if os.environ.get("DB_SSL") == "1":  # ฐานข้อมูลบนคลาวด์ (เช่น TiDB Cloud) บังคับใช้ TLS
+    DB["ssl"] = {"ca": os.environ.get("DB_SSL_CA", "/etc/ssl/certs/ca-certificates.crt")}
 DEVICE_TOKEN = os.environ.get("DEVICE_TOKEN", "")
 RETENTION_DAYS = int(os.environ.get("RETENTION_DAYS", "180"))
 ONLINE_SEC = 30
@@ -258,14 +263,14 @@ def ingest():
     temp, hum = (d.get("temp"), d.get("hum")) if ok else (None, None)
     fan = bool(d.get("fan"))
     s = state()
-    last = q("SELECT fan, sensor_ok, ts FROM readings ORDER BY id DESC LIMIT 1", one=True)
+    last = q("SELECT fan, sensor_ok, TIMESTAMPDIFF(SECOND, ts, NOW()) AS age FROM readings ORDER BY id DESC LIMIT 1", one=True)
 
     q("INSERT INTO readings (ts, temp, hum, fan, auto_mode, sensor_ok, rssi) VALUES (NOW(),%s,%s,%s,%s,%s,%s)",
       (temp, hum, fan, bool(d.get("auto", True)), ok, d.get("rssi")))
     q("UPDATE device_state SET last_seen=NOW(), ip=%s, uptime=%s, fan_on_sec=%s WHERE id=1",
       (client_ip(), d.get("uptime"), d.get("fanOnSec")))
 
-    if last is None or (datetime.now() - last["ts"]).total_seconds() > 120:
+    if last is None or last["age"] > 120:
         event("info", "บอร์ด ESP32 ออนไลน์")
     if last is not None:
         if bool(last["fan"]) != fan:
@@ -284,9 +289,10 @@ def ingest():
 @app.get("/api/status")
 def status():
     s = state()
+    age = q("SELECT TIMESTAMPDIFF(SECOND, last_seen, NOW()) AS a FROM device_state WHERE id=1", one=True)["a"]
     r = q("SELECT * FROM readings ORDER BY id DESC LIMIT 1", one=True)
     last_ok = q("SELECT temp, hum, ts FROM readings WHERE sensor_ok=1 ORDER BY id DESC LIMIT 1", one=True)
-    online = bool(s["last_seen"] and (datetime.now() - s["last_seen"]).total_seconds() < ONLINE_SEC)
+    online = age is not None and age < ONLINE_SEC
     return jsonify({
         "online": online,
         "lastSeen": s["last_seen"].isoformat() if s["last_seen"] else None,
@@ -400,6 +406,36 @@ def init_db():
     c.close()
 
 
+def set_password(name, pw):
+    c = pymysql.connect(**DB)
+    with c.cursor() as cur:
+        cur.execute("""INSERT INTO users (username, password_hash, created_at) VALUES (%s,%s,NOW())
+                       ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash)""",
+                    (name, generate_password_hash(pw)))
+        cur.execute("INSERT INTO events (ts, level, msg) VALUES (NOW(),'info',%s)",
+                    (f"ตั้งรหัสผ่านของ {name} จากเซิร์ฟเวอร์",))
+    c.close()
+
+
+def auto_setup():
+    """ใช้บนโฮสต์อย่าง Render: สร้างตารางและผู้ดูแลคนแรกจาก environment ตอนเริ่มรัน"""
+    init_db()
+    name, pw = os.environ.get("ADMIN_USER", "admin"), os.environ.get("ADMIN_PASSWORD", "")
+    if not pw or check_new(name, pw):
+        return
+    c = pymysql.connect(**DB)
+    with c.cursor() as cur:
+        cur.execute("SELECT COUNT(*) n FROM users")
+        n = cur.fetchone()["n"]
+    c.close()
+    if n == 0 or os.environ.get("ADMIN_RESET") == "1":
+        set_password(name, pw)
+
+
+if os.environ.get("AUTO_INIT") == "1":
+    auto_setup()
+
+
 if __name__ == "__main__":
     import sys
     if "--init-db" in sys.argv:
@@ -416,13 +452,7 @@ if __name__ == "__main__":
         err = check_new(name, pw)
         if err:
             sys.exit(err)
-        c = pymysql.connect(**DB)
-        with c.cursor() as cur:
-            cur.execute("""INSERT INTO users (username, password_hash, created_at) VALUES (%s,%s,NOW())
-                           ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash)""",
-                        (name, generate_password_hash(pw)))
-            cur.execute("INSERT INTO events (ts, level, msg) VALUES (NOW(),'info',%s)",
-                        (f"รีเซ็ตรหัสผ่านของ {name} จากเซิร์ฟเวอร์",))
+        set_password(name, pw)
         print(f"ตั้งรหัสผ่านของ {name} แล้ว")
     else:
         app.run(host="127.0.0.1", port=8000, debug=False)

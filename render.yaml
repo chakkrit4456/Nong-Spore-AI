@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: nong-spore
+    runtime: python
+    plan: free
+    region: singapore
+    rootDir: server
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --workers 2 --bind 0.0.0.0:$PORT --access-logfile - app:app
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: AUTO_INIT
+        value: "1"
+      - key: DB_SSL
+        value: "1"
+      - key: DB_TZ
+        value: "+07:00"
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "4000"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
+      - key: DB_NAME
+        value: nong_spore_ai
+      - key: ADMIN_USER
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEVICE_TOKEN
+        generateValue: true
