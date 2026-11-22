@@ -20,8 +20,8 @@
 // ---------- ตั้งค่า (แก้ตรงนี้) ----------
 const char* WIFI_SSID    = "YOUR_WIFI";
 const char* WIFI_PASS    = "YOUR_PASSWORD";
-const char* SERVER_URL   = "http://192.168.1.10";      // URL ของเซิร์ฟเวอร์ (ไม่มี / ท้าย)
-const char* DEVICE_TOKEN = "PASTE_TOKEN_FROM_INSTALL"; // install.sh จะแสดงค่านี้ตอนติดตั้งเสร็จ
+const char* SERVER_URL   = "https://nong-spore.onrender.com"; // URL ของเซิร์ฟเวอร์ (ไม่มี / ท้าย)
+const char* DEVICE_TOKEN = "PASTE_DEVICE_TOKEN"; // Render > nong-spore > Environment > DEVICE_TOKEN
 
 #define DHTPIN 4
 #define DHTTYPE DHT11
