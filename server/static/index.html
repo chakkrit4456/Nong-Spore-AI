@@ -21,7 +21,10 @@ header h1{font-size:18px;margin:0;flex:1;min-width:180px;display:flex;gap:10px;a
 header h1 .logo{width:38px;height:38px;border-radius:10px;background:var(--acc);color:#fff;display:grid;place-items:center}
 header h1 small{display:block;font-size:12px;color:var(--mute);font-weight:400}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;background:var(--acc2);font-size:13px}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--mute)}.dot.on{background:var(--ok)}.dot.off{background:var(--bad)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mute)}.dot.on{background:var(--ok)}.dot.off{background:var(--bad)}.dot.demo{background:var(--warn)}
+.pill.demo{background:color-mix(in srgb,var(--warn) 22%,transparent)}
+#demoSeg{display:none}body.demo #demoSeg{display:inline-flex}
+.logo{cursor:default;user-select:none}
 input,select,button{font:inherit;color:inherit}
 input,select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px}
 button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:500;display:inline-flex;gap:6px;align-items:center;justify-content:center}
@@ -93,7 +96,8 @@ table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:ta
 
 <header>
   <h1><span class="logo"><svg class="i lg"><use href="#i-mush"/></svg></span><span>Nong Spore AI <small>ระบบติดตามโรงเรือนเพาะเห็ด · ESP32 + DHT11</small></span></h1>
-  <span class="pill"><span class="dot" id="connDot"></span><span id="connTxt">กำลังโหลด...</span></span>
+  <span class="pill" id="connPill"><span class="dot" id="connDot"></span><span id="connTxt">กำลังโหลด...</span></span>
+  <span class="seg" id="demoSeg" title="สลับแหล่งข้อมูล"><button data-d="1" class="on">จำลอง</button><button data-d="0">จริง</button></span>
   <span class="pill"><svg class="i"><use href="#i-user"/></svg><span id="meName">-</span></span>
   <button class="ghost" id="btnTheme" title="สลับธีม" aria-label="สลับธีม"><svg class="i"><use href="#i-contrast"/></svg></button>
   <button class="ghost" id="btnLogout" title="ออกจากระบบ"><svg class="i"><use href="#i-logout"/></svg>ออกจากระบบ</button>
@@ -191,7 +195,58 @@ $("addUser").onsubmit=async e=>{e.preventDefault();
     $("nuMsg").textContent=`เพิ่มผู้ใช้ ${$("nuName").value.trim()} แล้ว`;e.target.reset();loadUsers();loadEvents()}catch(x){$("nuMsg").textContent=x.message}};
 $("btnLogout").onclick=async()=>{await fetch("/api/logout",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"});location.href="/login"};
 
+/* ---------- โหมดข้อมูลจำลอง (ไม่เขียนลงฐานข้อมูล) ---------- */
+let demo=store.get("ns_demo","0")==="1",DS=null,DHIST=[],DEV=[],demoTimer=null;
+const DSTEP=300e3; // จุดข้อมูลจำลองทุก 5 นาที
+function demoTemp(ts){const d=new Date(ts),hr=d.getHours()+d.getMinutes()/60,day=Math.sin(ts/864e5/3);
+  return 27.6+3.4*Math.sin((hr-9)/24*2*Math.PI)+day*.8+(Math.random()-.5)*.6}
+function demoEvent(msg,level="info"){DEV.unshift({ts:new Date().toISOString(),level,msg});DEV=DEV.slice(0,100)}
+function demoInit(){
+  const now=Date.now();DHIST=[];let fan=false,fanSec=0;
+  for(let ts=now-30*864e5;ts<=now;ts+=DSTEP){const raw=demoTemp(ts);if(raw>=30)fan=true;else if(raw<28)fan=false;
+    const t=fan?raw-.8:raw;if(fan)fanSec+=DSTEP/1000;
+    DHIST.push({ts,temp:+t.toFixed(1),hum:+Math.min(97,Math.max(62,86-(t-27)*2.4+(Math.random()-.5)*3)).toFixed(1),fan:fan?1:0})}
+  const l=DHIST.at(-1);
+  DS={temp:l.temp,hum:l.hum,fan:!!l.fan,auto:true,deviceAuto:true,tempOn:30,tempOff:28,sensorOk:true,online:true,
+      rssi:-58,ip:"demo",uptime:3*86400,fanOnSec:fanSec,species:$("species").value||"oyster"};
+  DEV=[];[["บอร์ด ESP32 ออนไลน์",-7200e3],["พัดลมเปิด (อัตโนมัติ) ที่ 30.1°C",-3600e3],["พัดลมปิด (อัตโนมัติ) ที่ 27.9°C",-1500e3]]
+    .forEach(([m,o])=>DEV.unshift({ts:new Date(now+o).toISOString(),level:"info",msg:m}));
+}
+function demoTick(){
+  const now=Date.now(),target=demoTemp(now);let t=DS.temp+(target-DS.temp)*.15+(DS.fan?-.25:.08);
+  let h=Math.min(97,Math.max(60,DS.hum+(DS.fan?-.4:.25)+(Math.random()-.5)));
+  const was=DS.fan;
+  if(DS.auto){if(t>=DS.tempOn)DS.fan=true;else if(t<DS.tempOff)DS.fan=false}
+  if(DS.fan!==was)demoEvent(`พัดลม${DS.fan?"เปิด":"ปิด"} (อัตโนมัติ) ที่ ${t.toFixed(1)}°C`);
+  DS.temp=+t.toFixed(1);DS.hum=+h.toFixed(1);DS.uptime+=3;if(DS.fan)DS.fanOnSec+=3;
+  if(now-DHIST.at(-1).ts>=60e3)DHIST.push({ts:now,temp:DS.temp,hum:DS.hum,fan:DS.fan?1:0});
+  loadStatus();
+}
+function demoHistory(hours){
+  const cut=Date.now()-hours*3600e3,pts=DHIST.filter(x=>x.ts>=cut),bucket=Math.max(60e3,hours*3600e3/400),m=new Map();
+  pts.forEach(x=>{const k=Math.floor(x.ts/bucket)*bucket,a=m.get(k)||{n:0,t:0,h:0,f:0};a.n++;a.t+=x.temp;a.h+=x.hum;a.f+=x.fan;m.set(k,a)});
+  const data=[...m].map(([k,a])=>({ts:new Date(k).toISOString(),temp:+(a.t/a.n).toFixed(1),hum:+(a.h/a.n).toFixed(1),fan:+(a.f/a.n).toFixed(2)}));
+  const T=pts.map(x=>x.temp),Hm=pts.map(x=>x.hum),avg=v=>v.reduce((a,b)=>a+b,0)/(v.length||1);
+  return{data,summary:{n:pts.length,tmin:Math.min(...T),tavg:avg(T),tmax:Math.max(...T),hmin:Math.min(...Hm),havg:avg(Hm),hmax:Math.max(...Hm),fan:avg(pts.map(x=>x.fan))}};
+}
+function setDemo(on){
+  demo=on;store.set("ns_demo",on?"1":"0");document.body.classList.toggle("demo",on);
+  document.querySelectorAll("#demoSeg button").forEach(b=>b.classList.toggle("on",(b.dataset.d==="1")===on));
+  clearInterval(demoTimer);
+  if(on){demoInit();demoTimer=setInterval(demoTick,3000)}
+  $("cfgMsg").textContent=on?"โหมดจำลอง: คำสั่งจะเปลี่ยนเฉพาะบนหน้าจอ ไม่ส่งถึงบอร์ด":"คำสั่งจะส่งถึงบอร์ดในรอบส่งข้อมูลถัดไป (ไม่เกิน 10 วินาที)";
+  loadStatus().then(loadHistory);loadEvents();
+}
+let logoClicks=[];
+document.querySelector(".logo").addEventListener("click",()=>{const n=Date.now();logoClicks=logoClicks.filter(t=>n-t<2000);logoClicks.push(n);
+  if(logoClicks.length>=5){logoClicks=[];setDemo(!demo)}});
+document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.shiftKey&&(e.key==="D"||e.key==="d")){e.preventDefault();setDemo(!demo)}});
+document.querySelectorAll("#demoSeg button").forEach(b=>b.onclick=()=>setDemo(b.dataset.d==="1"));
+
 async function loadStatus(){
+  if(demo){S={...DS,lastSeen:new Date().toISOString(),species:$("species").value};
+    $("connPill").classList.add("demo");$("connDot").className="dot demo";$("connTxt").textContent="ข้อมูลจำลอง (ไม่ใช่ค่าจริง)";render();return}
+  $("connPill").classList.remove("demo");
   try{S=await api("/api/status");
     $("connDot").className="dot "+(S.online?"on":"off");
     $("connTxt").textContent=S.online?"บอร์ดออนไลน์":S.lastSeen?"บอร์ดออฟไลน์ · ล่าสุด "+fmtDT(new Date(S.lastSeen)):"ยังไม่เคยได้รับข้อมูลจากบอร์ด";
@@ -199,8 +254,8 @@ async function loadStatus(){
     render();
   }catch(e){$("connDot").className="dot off";$("connTxt").textContent="เชื่อมต่อเซิร์ฟเวอร์ไม่ได้"}
 }
-async function loadHistory(){try{H=await api("/api/history?hours="+rangeH);renderChart();renderSummary();renderTable()}catch{}}
-async function loadEvents(){try{const l=await api("/api/events");
+async function loadHistory(){try{H=demo?demoHistory(rangeH):await api("/api/history?hours="+rangeH);renderChart();renderSummary();renderTable()}catch{}}
+async function loadEvents(){try{const l=demo?DEV:await api("/api/events");
   $("log").innerHTML=l.length?l.map(e=>`<li class="${e.level==="error"?"err":""}">${I(e.level==="error"?"warn":"check")}<time>${fmtDT(new Date(e.ts))}</time><span>${e.msg}</span></li>`).join(""):'<li class="muted">ยังไม่มีเหตุการณ์</li>'}catch{}}
 
 function score(t,h,p){if(t==null||h==null)return null;const d=(v,[a,b],k)=>v<a?(a-v)*k:v>b?(v-b)*k:0;return Math.max(0,Math.round(100-d(t,p.t,9)-d(h,p.h,3)))}
@@ -290,6 +345,12 @@ function renderTable(){
 }
 
 async function control(body){
+  if(demo){
+    if("fan" in body){DS.fan=!!body.fan;DS.auto=false;demoEvent(`สั่ง${DS.fan?"เปิด":"ปิด"}พัดลมจากแดชบอร์ด (จำลอง)`)}
+    if("auto" in body){DS.auto=!!body.auto;demoEvent("เปลี่ยนเป็นโหมด"+(DS.auto?"อัตโนมัติ":"สั่งเอง")+" (จำลอง)")}
+    DS.deviceAuto=DS.auto;
+    if("tempOn" in body){DS.tempOn=body.tempOn;DS.tempOff=body.tempOff;demoEvent(`ตั้งเกณฑ์พัดลมใหม่ เปิด ${body.tempOn}°C / ปิด ${body.tempOff}°C (จำลอง)`)}
+    await loadStatus();loadEvents();return true}
   try{S={...S,...await api("/api/control",{method:"POST",body:JSON.stringify(body)})};render();loadEvents();return true}
   catch(e){alert("ส่งคำสั่งไม่สำเร็จ: "+e.message);return false}
 }
@@ -298,9 +359,12 @@ $("fanOff").onclick=()=>control({fan:false});
 document.querySelectorAll("#modeSeg button").forEach(b=>b.onclick=()=>{const a=b.dataset.m==="auto";if(S&&a!==S.auto)control(a?{auto:true}:{auto:false,fan:S.fan})});
 $("saveCfg").onclick=async()=>{const on=+$("cfgOn").value,off=+$("cfgOff").value;
   if(!(off<on)){$("cfgMsg").textContent="ค่าปิดต้องน้อยกว่าค่าเปิด";return}
-  if(await control({tempOn:on,tempOff:off})){$("cfgMsg").textContent=`บันทึกแล้ว: เปิด ${on}°C / ปิด ${off}°C บอร์ดจะได้รับค่าใหม่ภายใน 10 วินาที`;loadHistory()}};
-$("species").onchange=()=>{control({species:$("species").value});renderSummary()};
-$("clrLog").onclick=async()=>{if(!confirm("ล้างบันทึกเหตุการณ์ทั้งหมด?"))return;await api("/api/events",{method:"DELETE",body:"{}"}).catch(x=>alert(x.message));loadEvents()};
+  if(await control({tempOn:on,tempOff:off})){$("cfgMsg").textContent=demo?`(จำลอง ไม่ส่งถึงบอร์ด) เปิด ${on}°C / ปิด ${off}°C`:`บันทึกแล้ว: เปิด ${on}°C / ปิด ${off}°C บอร์ดจะได้รับค่าใหม่ภายใน 10 วินาที`;loadHistory()}};
+$("csv").addEventListener("click",e=>{if(!demo)return;e.preventDefault();
+  const rows=[["timestamp","temperature_c","humidity_pct","fan"],...DHIST.filter(x=>x.ts>=Date.now()-rangeH*3600e3).map(x=>[new Date(x.ts).toISOString(),x.temp,x.hum,x.fan])];
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+rows.map(r=>r.join(",")).join("\n")],{type:"text/csv"}));a.download="nong_spore_DEMO.csv";a.click()});
+$("species").onchange=()=>{if(!demo)control({species:$("species").value});render();renderSummary()};
+$("clrLog").onclick=async()=>{if(!confirm("ล้างบันทึกเหตุการณ์ทั้งหมด?"))return;if(demo){DEV=[];loadEvents();return}await api("/api/events",{method:"DELETE",body:"{}"}).catch(x=>alert(x.message));loadEvents()};
 document.querySelectorAll("#rangeSeg button").forEach(b=>{b.classList.toggle("on",+b.dataset.h===rangeH);b.onclick=()=>{rangeH=+b.dataset.h;store.set("ns_range",rangeH);
   document.querySelectorAll("#rangeSeg button").forEach(x=>x.classList.toggle("on",x===b));loadHistory()}});
 $("btnTheme").onclick=()=>{const cur=document.documentElement.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
@@ -312,7 +376,8 @@ $("zoom").onclick=()=>$("zoom").style.display="none";
 
 const th=store.get("ns_theme",null);if(th)document.documentElement.dataset.theme=th;
 api("/api/me").then(m=>$("meName").textContent=m.username).catch(()=>{});
-loadStatus().then(loadHistory);loadEvents();loadUsers();
+if(demo)setDemo(true);else{loadStatus().then(loadHistory);loadEvents()}
+loadUsers();
 setInterval(loadStatus,5000);setInterval(loadHistory,60000);setInterval(loadEvents,15000);
 </script>
 </body>
