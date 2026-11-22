@@ -19,11 +19,11 @@ services:
       - key: DB_TZ
         value: "+07:00"
       - key: DB_HOST
-        sync: false
+        value: gateway01.ap-southeast-1.prod.aws.tidbcloud.com
       - key: DB_PORT
         value: "4000"
       - key: DB_USER
-        sync: false
+        value: 2JPdbtM6mQq94YU.root
       - key: DB_PASS
         sync: false
       - key: DB_NAME

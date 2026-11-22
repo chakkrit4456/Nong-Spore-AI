@@ -399,6 +399,11 @@ def static_files(p):
 
 
 def init_db():
+    boot = {k: v for k, v in DB.items() if k != "database"}
+    c = pymysql.connect(**boot)
+    with c.cursor() as cur:
+        cur.execute(f"CREATE DATABASE IF NOT EXISTS `{DB['database']}` CHARACTER SET utf8mb4")
+    c.close()
     c = pymysql.connect(**DB)
     with c.cursor() as cur:
         for s in SCHEMA:
